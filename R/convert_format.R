@@ -87,6 +87,10 @@ convert_redeem_matrix_long <- function(mat_var, mat_depth, cell_whitelist = NULL
     print(glue("{sample}=========="))
     # Start filtering
     print(glue("{length(row.names(mat_var))} total cells in this redeem dataset"))
+
+    colnames(mat_var) = convert_variant(colnames(mat_var))
+    colnames(mat_depth) = convert_variant(colnames(mat_depth))
+
     # print(glue("{sum(row.names(mat_var) %in% cell_whitelist)} are HSCs in the HSC whitelist"))
     if (is.null(cell_whitelist)) {
       mat_var_filtered = mat_var
@@ -115,5 +119,6 @@ convert_redeem_matrix_long <- function(mat_var, mat_depth, cell_whitelist = NULL
     print(glue("The variant has {nrow(dt_var)}; The depth has {nrow(dt_depth)}. They should be the same.\n"))
 
     dt_var_depth<-cbind(dt_var,d=dt_depth$d)
+
     return(dt_var_depth)
 }
