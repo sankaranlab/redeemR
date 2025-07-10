@@ -14,10 +14,10 @@
 plot_depth<-function(ob,name="",w=10,h=3){
 depth=ob@DepthSummary
 d1<-depth[[1]]
-d1$pos <- as.numeric(as.character(d1$pos))
 d2<-depth[[2]]
 names(d1)<-c("pos","meanCov")
 names(d2)<-c("cell","meanCov")
+d1$pos <- as.numeric(as.character(d1$pos))
 options(repr.plot.width=w, repr.plot.height=h)
 p1<-ggplot(d1)+aes(pos,meanCov)+geom_point()+theme_bw()
 p2<-ggplot(d1)+aes("cell",meanCov)+geom_violin()+geom_boxplot()+theme_bw()
