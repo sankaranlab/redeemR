@@ -46,64 +46,6 @@ if(PostFix){
 return(meta)
 }
 
-#' Translate_simple_RNA2ATAC 
-#'
-#' This function allows you to input the RNA name to translate to ATAC name 
-#' @param name  RNA name, as the RNA cell barcode usually with the post -1
-#' @param bclength The cell barcode length, default is 16
-#' @param from A vector of the postfix,  usually is c(1,2,3,...), it depends on how many samples are aggregated in Cellranger RNA part
-#' @param to A vector of the postfix, those cooresponds to the postfix added in redeemR, in general, if it matches, then simply c(1,2,3,...), 
-#' but in case not match, here provides a way to transform into redeemR order
-#' @return ATAC name
-#' Translate_RNA2ATAC(`a vector of RNA names`)
-#' @export
-Translate_simple_RNA2ATAC<-function(name,PostFix=T,bclength=16,from=c(1,2,3),to=c(1,2,3)){
-data(ATACWhite)
-data(RNAWhite)
-L<-nchar(name)
-post<-substr(name,bclength+2,L)
-post<-post %>% plyr::mapvalues(.,from=from,to=to)
-NakeName<-substr(name,1,bclength)
-Dic2<-ATACWhite$V1
-names(Dic2)<-as.character(RNAWhite$V1)
-if(PostFix){
-	name<-paste(Dic2[NakeName],post,sep="_")
-}else{
-	name<-Dic2[NakeName]
-}
-return(name)
-}
-
-#' Translate_simple_ATAC2RNA 
-#'
-#' This function allows you to input the ATAC name to translate to RNA name 
-#' @param name  RNA name, as the RNA cell barcode usually with the post -1
-#' @param bclength The cell barcode length, default is 16
-#' @param from A vector of the postfix,  usually is c(1,2,3,...), it depends on how many samples are aggregated in Cellranger RNA part
-#' @param to A vector of the postfix, those cooresponds to the postfix added in redeemR, in general, if it matches, then simply c(1,2,3,...), 
-#' but in case not match, here provides a way to transform into redeemR order
-#' @return RNA name
-#' Translate_RNA2ATAC(`a vector of RNA names`)
-#' @export
-Translate_simple_ATAC2RNA<-function(name,PostFix=T,bclength=16,from=c(1,2,3),to=c(1,2,3)){
-data(ATACWhite)
-data(RNAWhite)
-L<-nchar(name)
-post<-substr(name,bclength+2,L)
-post<-post %>% plyr::mapvalues(.,from=from,to=to)
-NakeName<-substr(name,1,bclength)
-Dic2<-RNAWhite$V1
-names(Dic2)<-as.character(ATACWhite$V1)
-if(PostFix){
-	name<-paste(Dic2[NakeName],post,sep="-")
-}else{
-	name<-Dic2[NakeName]
-}
-return(name)
-}
-
-
-
 
 
 #' Function to Merge sparse Matrix

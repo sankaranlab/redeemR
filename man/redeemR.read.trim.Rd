@@ -4,22 +4,16 @@
 \alias{redeemR.read.trim}
 \title{Function to read in redeemV outputs with edge trimming, default is trimming 4bp}
 \usage{
-redeemR.read.trim(
-  path,
-  thr = "S",
-  Processed = F,
-  rdsname = "./VariantsGTSummary.RDS",
-  edge_trim = 4
-)
+redeemR.read.trim(path, thr = "S", edge_trim = 9)
 }
 \arguments{
 \item{path}{The XX/final folder, the output from mitoV}
 
 \item{thr}{The thredhold of filtering T(Total),LS(Less Stringent:c=0.75,a1=2,a2=1), S(Stringent:c=0.75,a1=3,a2=2), VS(Very Stringent:c=0.75,a1=4,a2=3)"}
 
-\item{Processed}{Boolean variable (Default F), if true directly readRDS("VariantsGTSummary.RDS") or, generate and saveout "VariantsGTSummary.RDS"}
-
 \item{edge_trim}{how many bp to be trimmed, default is 4,}
+
+\item{Processed}{Boolean variable (Default F), if true directly readRDS("VariantsGTSummary.RDS") or, generate and saveout "VariantsGTSummary.RDS"}
 }
 \value{
 this returns depth which is a list of 4 df (Total/VerySensitive/Sensitive/Specific), each is a genotype summary

@@ -97,13 +97,41 @@ return(ob)
 #' @param fdr fdr cutoff, default is 0.05
 #' @export
 clean_redeem <-function(ob,fdr=0.05){
-    ob@V.fitered <- subset(ob@V.fitered,qvalues<=fdr)
+    ob@V.fitered <- rbind(subset(ob@V.fitered,HomoTag == "Homo"), 
+                      subset(ob@V.fitered,qvalues<=fdr))
     ob@GTsummary.filtered<-subset(ob@GTsummary.filtered, Variants %in% ob@V.fitered$Variants)
     ob<-Make_matrix(ob,onlyhetero=T)
     ob@UniqueV <- ob@V.fitered$Variants
     return(ob)
 }
 
+#' add_annotation_redeem
+#'
+#' This function is to simply add all annotation in 
+#' 
+#' @param ob redeem object
+#' @param fdr fdr cutoff, default is 0.05
+#' @export
+add_annotation_redeem <-function(ob){
+    ob@V.fitered <- annotate_all_variants(ob@V.fitered)
+    return(ob)
+}
+
+
+#' clean_redeem_remove_blacklist_RSRS50
+#'
+#' This function is to clean redeem by filtering both V.fitered and GTsummary.filtered by qvalues
+#' 
+#' @param ob redeem object
+#' @export
+clean_redeem_remove_blacklist_RSRS50 <-function(ob){
+    variant_to_remove<- ob@V.fitered %>% filter((HomoTag == "Hetero" & RSRS50 == "Yes") | blacklist_region == "blacklist_region") %>% pull(Variants)
+    ob@V.fitered <- subset(ob@V.fitered,!Variants %in% variant_to_remove)
+    ob@GTsummary.filtered<-subset(ob@GTsummary.filtered, !Variants %in% variant_to_remove)
+    ob<-Make_matrix(ob,onlyhetero=T)
+    ob@UniqueV <- ob@V.fitered$Variants
+    return(ob)
+}
 
 #' clean_redeem_removehotcall
 #'

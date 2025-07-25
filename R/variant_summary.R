@@ -14,7 +14,7 @@
 DepthSummary<-function(path,CellSubset=NA,only_Total=T){
     message("By default only total depth is summarized")
     message("deprecated")
-    QualifiedTotalCts<-read.table(paste(path,"/QualifiedTotalCts",sep=""))
+    QualifiedTotalCts<-data.table::fread(paste(path,"/QualifiedTotalCts",sep=""))
     print("using testing MP version..")   
     QualifiedTotalCts$V3 <- as.numeric(as.character(QualifiedTotalCts$V3))
     QualifiedTotalCts$V4 <- as.numeric(as.character(QualifiedTotalCts$V4))
@@ -50,6 +50,7 @@ DepthSummary<-function(path,CellSubset=NA,only_Total=T){
     depth_VS<-list(Pos.MeanCov=Pos.MeanCov,Cell.MeanCov=Cell.MeanCov)
 
     depth<-list(Total=depth_Total,VerySensitive=depth_LS,Sensitive=depth_S,Specific=depth_VS)
+    message("DepthSummary get.")
     return(depth)
     }
 }
@@ -148,10 +149,8 @@ if(Processed){
 #' @examples WD<-"/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor01_CD34_1_Multiomekit/MTenrichCombine/Enrich/CW_mgatk/final"
 #' DN1CD34_1.VariantsGTSummary<-CW_mgatk.read(WD,Processed =T)
 #' @export
-redeemR.read.trim<-function(path,thr="S",Processed=F,rdsname="./VariantsGTSummary.RDS",edge_trim=4){
-if(Processed){
-    VariantsGTSummary<-readRDS(paste(path,rdsname,sep=""))
-}else{
+redeemR.read.trim<-function(path,thr="S",edge_trim=9){
+    message("From 2025-07-25 we don't save VariantsGTSummary anymore, so no parameter to set Processed=T and rds input")
     if(missing(path)|missing(thr)){
         message("redeemR.read(path,thr)")
         message("missing variable path or thr")
@@ -163,13 +162,13 @@ if(Processed){
     }
     GiveName<-c("UMI","Cell","Pos","Variants","Call","Ref","FamSize","GT_Cts","CSS","DB_Cts","SG_Cts","Plus","Minus","Depth")
     if(thr=="T"){
-        RawGenotypes<-read.table(paste(path,"/RawGenotypes.Total.StrandBalance",sep=""))
+        RawGenotypes<-data.table::fread(paste(path,"/RawGenotypes.Total.StrandBalance",sep=""))
     }else if(thr=="LS"){
-        RawGenotypes<-read.table(paste(path,"/RawGenotypes.VerySensitive.StrandBalance",sep=""))
+        RawGenotypes<-data.table::fread(paste(path,"/RawGenotypes.VerySensitive.StrandBalance",sep=""))
     }else if(thr=="S"){
-        RawGenotypes<-read.table(paste(path,"/RawGenotypes.Sensitive.StrandBalance",sep=""))
+        RawGenotypes<-data.table::fread(paste(path,"/RawGenotypes.Sensitive.StrandBalance",sep=""))
     }else if(thr=="VS"){
-        RawGenotypes<-read.table(paste(path,"/RawGenotypes.Specific.StrandBalance",sep=""))
+        RawGenotypes<-data.table::fread(paste(path,"/RawGenotypes.Specific.StrandBalance",sep=""))
     } 
     colnames(RawGenotypes)<-GiveName
     # handle the trimming
@@ -185,9 +184,7 @@ if(Processed){
     attr(VariantsGTSummary,"depth")<-DepthSummary(path)
     attr(VariantsGTSummary,"path")<-path
     attr(VariantsGTSummary,"edge_trim")<-edge_trim
-    saveRDS(VariantsGTSummary,rdsname)
     return(VariantsGTSummary)
-}
 }
 
 
@@ -208,7 +205,7 @@ GiveName<-c("UMI","Cell","Pos","Variants","Call","Ref","FamSize","GT_Cts","CSS",
 ## Add suffix to cell names and concat the RawGenotypes
 RawGenotypes.concat <- c()
 for (i in 1: length(paths)){
-RawGenotypes<-read.table(paste(paths[i],"/RawGenotypes.Sensitive.StrandBalance",sep=""))
+RawGenotypes<-data.table::fread(paste(paths[i],"/RawGenotypes.Sensitive.StrandBalance",sep=""))
 RawGenotypes$V2 <- paste(RawGenotypes$V2, suffix[i], sep=".")
 RawGenotypes.concat <- rbind(RawGenotypes.concat,RawGenotypes)
 }    
@@ -453,9 +450,10 @@ return(raw)
 
 #' Function needed to compute the 
 make_position_df_3.4<-function(in_df){
-    first <- str_split_fixed(in_df[,"UMI"], "_", 3)[, c(2)] %>% 
+    require(stringr)
+    first <- stringr::str_split_fixed(in_df[,"UMI"], "_", 3)[, c(2)] %>% 
         as.numeric()
-    last <- str_split_fixed(in_df[,"UMI"], "_", 3)[, c(3)] %>% 
+    last <- stringr::str_split_fixed(in_df[,"UMI"], "_", 3)[, c(3)] %>% 
         as.numeric()
     start <- pmin(first, last)
     end <- pmax(first, last)
@@ -473,9 +471,9 @@ make_position_df_3.4<-function(in_df){
 #' @export
 ## 
 make_position_df_3.5<-function(in_df){
-    first <- str_split_fixed(in_df[,"UMI"], "_", 3)[, c(2)] %>% 
+    first <- stringr::str_split_fixed(in_df[,"UMI"], "_", 3)[, c(2)] %>% 
         as.numeric()
-    last <- str_split_fixed(in_df[,"UMI"], "_", 3)[, c(3)] %>% 
+    last <- stringr::str_split_fixed(in_df[,"UMI"], "_", 3)[, c(3)] %>% 
         as.numeric()
     start <- pmin(first, last)
     end <- pmax(first, last)
