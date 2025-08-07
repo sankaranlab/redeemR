@@ -4,7 +4,7 @@
 \alias{clean_redeem}
 \title{clean_redeem}
 \usage{
-clean_redeem(ob, fdr = 0.05)
+clean_redeem(ob, fdr = 0.05, min_cell_per_variant = 2)
 }
 \arguments{
 \item{ob}{redeem object}

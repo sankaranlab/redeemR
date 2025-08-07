@@ -54,9 +54,11 @@ TREE<-setClass(
 
 #' Major redeem class that store clonal-resolved multi-omics
 #'
+#' @slot GTsummary.raw  The Mitochondrial genotype data frame, unfiltered
+#' @slot V.raw is data frame of variant metrics, unfiltered
 #' @slot GTsummary.filtered  The Mitochondrial genotype data frame
 #' @slot CellMeta Store meta data for each cell type
-#' @slot V.fitered.list a list of data frame of variant metrics, VAF, cellN, etc (each for different stringency),
+#' @slot V.fitered is data frame of variant metrics, VAF, cellN, etc (each for different stringency),
 #' @slot UniqueV A character showing the number of usable variant
 #' @slot Cts.Mtx A sparse matrix cell-mitoVariants, store the variant count
 #' @slot Cts.Mtx.bi A sparse matrix cell-mitoVariants, The variant count has been binarized into 0 and 1
@@ -70,8 +72,9 @@ TREE<-setClass(
 #' @export
 redeemR<-setClass(
     "redeemR",
-    slots=c(GTsummary.filtered="data.frame",
-            RawGenotypes.V.filtered="data.frame",
+    slots=list(GTsummary.filtered="data.frame",
+            GTsummary.ini="data.frame",
+            V.ini="data.frame",
             CellMeta="data.frame",
             V.fitered="data.frame",
             UniqueV="character",

@@ -11,11 +11,15 @@ Major redeem class that store clonal-resolved multi-omics
 \section{Slots}{
 
 \describe{
+\item{\code{GTsummary.raw}}{The Mitochondrial genotype data frame, unfiltered}
+
+\item{\code{V.raw}}{is data frame of variant metrics, unfiltered}
+
 \item{\code{GTsummary.filtered}}{The Mitochondrial genotype data frame}
 
 \item{\code{CellMeta}}{Store meta data for each cell type}
 
-\item{\code{V.fitered.list}}{a list of data frame of variant metrics, VAF, cellN, etc (each for different stringency),}
+\item{\code{V.fitered}}{is data frame of variant metrics, VAF, cellN, etc (each for different stringency),}
 
 \item{\code{UniqueV}}{A character showing the number of usable variant}
 

@@ -12,10 +12,9 @@
 #' @export
 #' @import dplyr
 DepthSummary<-function(path,CellSubset=NA,only_Total=T){
-    message("By default only total depth is summarized")
-    message("deprecated")
+    message("[DepthSummary]: By default only total depth is summarized")
     QualifiedTotalCts<-data.table::fread(paste(path,"/QualifiedTotalCts",sep=""))
-    print("using testing MP version..")   
+    print("[DepthSummary]: using testing MP version..")   
     QualifiedTotalCts$V3 <- as.numeric(as.character(QualifiedTotalCts$V3))
     QualifiedTotalCts$V4 <- as.numeric(as.character(QualifiedTotalCts$V4))
     QualifiedTotalCts$V5 <- as.numeric(as.character(QualifiedTotalCts$V5))
@@ -149,8 +148,11 @@ if(Processed){
 #' @examples WD<-"/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor01_CD34_1_Multiomekit/MTenrichCombine/Enrich/CW_mgatk/final"
 #' DN1CD34_1.VariantsGTSummary<-CW_mgatk.read(WD,Processed =T)
 #' @export
-redeemR.read.trim<-function(path,thr="S",edge_trim=9){
-    message("From 2025-07-25 we don't save VariantsGTSummary anymore, so no parameter to set Processed=T and rds input")
+redeemR.read.trim<-function(path,
+                            thr="S",
+                            edge_trim=9,
+                            ...){
+    message("[redeemR.read.trim:] From 2025-07-25 we don't save VariantsGTSummary anymore. To read redeemV final folder with edge-trim: run redeemR.read.trim(path,thr = 'S',edge_trim=9)")
     if(missing(path)|missing(thr)){
         message("redeemR.read(path,thr)")
         message("missing variable path or thr")
@@ -471,9 +473,9 @@ make_position_df_3.4<-function(in_df){
 #' @export
 ## 
 make_position_df_3.5<-function(in_df){
-    first <- stringr::str_split_fixed(in_df[,"UMI"], "_", 3)[, c(2)] %>% 
+    first <- stringr::str_split_fixed(as.character(in_df[["UMI"]]), "_", 3)[, c(2)] %>% 
         as.numeric()
-    last <- stringr::str_split_fixed(in_df[,"UMI"], "_", 3)[, c(3)] %>% 
+    last <- stringr::str_split_fixed(as.character(in_df[["UMI"]]), "_", 3)[, c(3)] %>% 
         as.numeric()
     start <- pmin(first, last)
     end <- pmax(first, last)

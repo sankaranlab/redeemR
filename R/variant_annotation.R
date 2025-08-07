@@ -77,7 +77,7 @@ Annotate_base_change <- function(variant_annotation){
 #'   \item{\code{n_haplos}}{Count of haplogroups (ancestry branches) marking this variant (>80\% posterior).}
 #' }
 #'
-#' @importFrom dplyr select one_of left_join arrange desc group_by summarize
+#' @importFrom dplyr select any_of left_join arrange desc group_by summarize
 #' @export
 annotate_variants_population_stats <- function(variant_annotation){ 
     data(mitomap_freq)
@@ -96,7 +96,7 @@ annotate_variants_population_stats <- function(variant_annotation){
         n_haplos = n()
       ) 
     variant_annotation <- variant_annotation %>% 
-                        select(-one_of(unique(c(names(mitomap_freq),names(haplogroup_markers_summary))))) %>%
+                        select(-any_of(unique(c(names(mitomap_freq),names(haplogroup_markers_summary))))) %>%
                         left_join(mitomap_freq, by = c("Variants" = "ID")) %>% 
                         left_join(haplogroup_markers_summary[, c("ID","n_haplos")], by = c("Variants" = "ID"))
 
@@ -255,12 +255,12 @@ annotate_variants_aachange <- function(variant_annotation){
 #'
 #' @return The input \code{variant_annotation} with an added column:
 #' \describe{\item{Disease}{Disease association(s) from \code{mito_diseases}, NA if none.}}
-#' @importFrom dplyr select one_of left_join
+#' @importFrom dplyr select any_of left_join
 #' @export
 annotate_variants_mito_disease <- function(variant_annotation){
     data(mito_diseases)
     variant_annotation <- variant_annotation %>% 
-                    select(-one_of(unique(c("Disease")))) %>%
+                    select(-any_of(unique(c("Disease")))) %>%
                     left_join(mito_diseases[,c("ID","Disease")], by = c("Variants" = "ID"))
     return(variant_annotation)
 }

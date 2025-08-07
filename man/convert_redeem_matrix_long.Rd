@@ -5,20 +5,20 @@
 \title{Convert a redeemR variant & depth matrix into long format for downstream analysis}
 \usage{
 convert_redeem_matrix_long(
-  sample = "",
   mat_var,
   mat_depth,
-  cell_whitelist = NULL
+  cell_whitelist = NULL,
+  sample = NULL
 )
 }
 \arguments{
-\item{sample}{Character; an identifier for this dataset (printed to the console).}
-
 \item{mat_var}{A numeric matrix of variant UMI counts (cells × variants).}
 
 \item{mat_depth}{A numeric matrix of total depth (same dimensions and row/column names as \code{mat_var}).}
 
 \item{cell_whitelist}{A character vector of cell barcodes to retain (rows of \code{mat_var}/\code{mat_depth}).}
+
+\item{sample}{Character; an identifier for this dataset (printed to the console).}
 }
 \value{
 A \code{data.table} with columns:

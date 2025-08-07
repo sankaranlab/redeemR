@@ -4,7 +4,7 @@
 \alias{redeemR.read.trim}
 \title{Function to read in redeemV outputs with edge trimming, default is trimming 4bp}
 \usage{
-redeemR.read.trim(path, thr = "S", edge_trim = 9)
+redeemR.read.trim(path, thr = "S", edge_trim = 9, ...)
 }
 \arguments{
 \item{path}{The XX/final folder, the output from mitoV}
