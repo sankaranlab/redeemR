@@ -28,7 +28,8 @@ You can install the development version of redeemR:
 devtools::install_github("chenweng1991/redeemR")
 library(redeemR)
 ```
-
+## Script
+- [redeemR2.0 preprocess](./scripts/)
 ## Update
 - 2024-8-24 We provide an additional filtering option in the ReDeeM-R package. This approach effectively eliminates the position biases, leads to a mutational signature
 indistinguishable from bona fide mitochondrial mutations, and removes excess low molecule high connectedness mutations with high sensitivity. Please see Document Use filter-2 below
