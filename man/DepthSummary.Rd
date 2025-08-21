@@ -16,7 +16,11 @@ DepthSummary(path, CellSubset = NA, only_Total = T)
 \item{Processed}{Boolean variable(Default T), if true directly readRDS("depth.RDS") or, generate and saveout "depth.RDS"}
 }
 \value{
-this returns depth which is a list of 4 list(Total/VerySensitive/Sensitive/Specific), each contains 2 df, summarize mito coverage by Pos/Cell
+this returns depth which is a list of 4 list(Total/LS/S/VS), each contains 2 df, summarize mito coverage by Pos/Cell.
+LS = Less Stringent (was VerySensitive), S = Stringent (was Sensitive), VS = Very Stringent (was Specific).
+For backward compatibility, also includes VerySensitive=LS, Sensitive=S, Specific=VS.
+Automatically detects column formats: new (CellBC/Position/Total/VerySensitive/Sensitive/Specific),
+new LS/S/VS (CellBC/Position/Total/LS/S/VS), or old (V1/V2/V3/V4/V5/V6).
 }
 \description{
 This function allows you to summarize the depth

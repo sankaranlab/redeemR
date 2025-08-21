@@ -329,3 +329,102 @@ annotate_all_variants <- function(variant_annotation) {
     annotate_variants_mito_disease() %>%
     Annotate_base_change()
 }
+
+#' Add median depth information to redeemR object
+#'
+#' @description
+#' Computes the median depth for each variant from the depth matrix and adds it
+#' to the V.fitered slot by joining with the variant information.
+#'
+#' @details
+#' This function:
+#' 1. Extracts the depth matrix from the redeemR object
+#' 2. Computes median depth for each variant (column) in the depth matrix
+#' 3. Converts variant names using convert_variant() for proper joining
+#' 4. Joins the median depth information with V.fitered
+#' 5. Returns the modified redeemR object
+#'
+#' @param redeemR A redeemR object that contains a depth matrix in @Ctx.Mtx.depth
+#'
+#' @return The input redeemR object with median_depth column added to @V.fitered
+#'
+#' @examples
+#' redeemR <- add_median_depth_to_redeemR(redeemR)
+#'
+#' @export
+#' @importFrom dplyr left_join
+add_median_depth_to_redeemR <- function(redeemR) {
+    # Check if depth matrix exists
+    if (is.null(redeemR@Ctx.Mtx.depth)) {
+        warning("Depth matrix (@Ctx.Mtx.depth) is NULL. Cannot compute median depths.")
+        return(redeemR)
+    }
+    
+    # Compute median depth for each variant (column)
+    variant_median_depths <- apply(redeemR@Ctx.Mtx.depth, 2, median, na.rm = TRUE)
+    # Also calculate the number of cells with depth > 0 for each variant (column)
+    variant_cellN_depth_gt0 <- apply(redeemR@Ctx.Mtx.depth, 2, function(x) sum(x > 0, na.rm = TRUE))
+    
+    # Create data frame with variant names, median depths, and cell counts, convert to standard format
+    depth_df <- tibble(
+        variant_col = names(variant_median_depths),
+        median_depth = variant_median_depths,
+        cellN_depth_gt0 = variant_cellN_depth_gt0
+    ) %>%
+        mutate(Variants = convert_variant(variant_col)) %>%
+        select(Variants, median_depth, cellN_depth_gt0)
+    
+    # Join with V.fitered to add median_depth and cellN_depth_gt0 columns
+    redeemR@V.fitered <- left_join(
+        redeemR@V.fitered, 
+        depth_df, 
+        by = "Variants"
+    ) %>% mutate(CellNPCT=CellN/cellN_depth_gt0)
+    
+    message("Added median depth and cell count information to @V.fitered for ", nrow(depth_df), " variants")
+    
+    return(redeemR)
+}
+
+
+#' add_prop_2_3_to_redeemR
+#'
+#' Add per-variant QC features from \code{redeemR@GTsummary.filtered} into
+#' \code{redeemR@V.fitered}. For each variant, compute and join:
+#' \itemize{
+#'   \item \code{prop_2_3}: fraction of cells with mtUMI counts equal to 2 or 3
+#'   \item \code{mean_umi_gt1}: mean mtUMI counts among cells with counts > 1
+#' }
+#'
+#' @param redeemR A redeemR object with slots \code{@GTsummary.filtered} and \code{@V.fitered}.
+#'
+#' @return The input \code{redeemR} with columns \code{prop_2_3} and \code{mean_umi_gt1}
+#'   joined into \code{@V.fitered} by \code{Variants}.
+#'
+#' @examples
+#' redeemR <- add_prop_2_3_to_redeemR(redeemR)
+#'
+#' @export
+#' @importFrom dplyr group_by summarise n_distinct left_join select
+add_prop_2_3_to_redeemR <- function(redeemR) {
+    detail_df <- redeemR@GTsummary.filtered
+    variant_features <- detail_df %>%
+        group_by(Variants) %>%
+        summarise(
+            n_cells    = n_distinct(Cell),
+            n_2_3      = sum(Freq %in% c(2, 3), na.rm = TRUE),
+            prop_2_3   = ifelse(n_cells > 0, n_2_3 / n_cells, NA_real_),
+            mean_umi_gt1 = mean(Freq[Freq > 1], na.rm = TRUE),
+            .groups = "drop"
+        ) %>%
+        select(Variants, prop_2_3, mean_umi_gt1)
+
+    redeemR@V.fitered <- dplyr::left_join(
+        redeemR@V.fitered,
+        variant_features,
+        by = "Variants"
+    )
+
+    return(redeemR)
+}
+

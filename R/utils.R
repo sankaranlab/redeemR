@@ -802,3 +802,73 @@ CountOverlap_Adj<-function(M,n=0){
     a[a>n]<-1
     return(a)
 }
+
+#' Print redeemR matrix dimensions
+#'
+#' @description
+#' Displays the dimensions of all matrices in a redeemR object for quick inspection.
+#'
+#' @param ob A redeemR object
+#'
+#' @return Prints matrix dimensions to console
+#'
+#' @examples
+#' print_redeemR_matrix_dims(redeemR_object)
+#'
+#' @export
+print_redeemR_matrix_dims <- function(ob) {
+    cat("=== redeemR Matrix Dimensions ===\n")
+    cat("Cts.Mtx:      ", nrow(ob@Cts.Mtx), "cells x", ncol(ob@Cts.Mtx), "variants\n")
+    cat("Cts.Mtx.bi:   ", nrow(ob@Cts.Mtx.bi), "cells x", ncol(ob@Cts.Mtx.bi), "variants\n")
+    if (!is.null(ob@Ctx.Mtx.depth)) {
+        cat("Ctx.Mtx.depth:", nrow(ob@Ctx.Mtx.depth), "cells x", ncol(ob@Ctx.Mtx.depth), "variants\n")
+    } else {
+        cat("Ctx.Mtx.depth: NULL\n")
+    }
+    cat("================================\n")
+}
+
+# helpers to record matrix dimensions at each step
+
+#' Safely get matrix-like dimensions
+#'
+#' Returns a pair of integers for the number of rows and columns of a
+#' matrix-like object. If the input is NULL, returns NA for both values.
+#'
+#' @param x A matrix/data.frame/Matrix object or NULL.
+#' @return Integer vector of length 2: c(nrow, ncol), or c(NA_integer_, NA_integer_) if x is NULL.
+#' @export
+safe_dim <- function(x) {
+	if (is.null(x)) return(c(NA_integer_, NA_integer_))
+	c(NROW(x), NCOL(x))
+}
+
+
+#' Append redeemR matrix dimension snapshot
+#'
+#' Appends a row to the global `dim_log` list capturing dimensions of
+#' key matrices contained in a redeemR object (Cts.Mtx, Cts.Mtx.bi, and
+#' depth matrix if present).
+#'
+#' @param obj A redeemR S4 object holding slots for matrices.
+#' @param step_label Character label describing the pipeline step.
+#' @return Invisibly returns NULL. Updates the global `dim_log` list with a data.frame row.
+#' @details Depth matrix is read from slot `Ctx.Mtx.depth` if present.
+#' @keywords internal
+#' @importFrom methods slot
+#' @export
+append_dim_row <- function(obj, step_label) {
+	cts <- slot(obj, "Cts.Mtx")
+	cts_bi <- slot(obj, "Cts.Mtx.bi")
+	depth_mtx <- slot(obj, "Ctx.Mtx.depth")
+	d1 <- safe_dim(cts)
+	d2 <- safe_dim(cts_bi)
+	d3 <- safe_dim(depth_mtx)
+	data.frame(
+		step = step_label,
+		Cts.Mtx_rows = d1[1], Cts.Mtx_cols = d1[2],
+		Cts.Mtx.bi_rows = d2[1], Cts.Mtx.bi_cols = d2[2],
+		Depth_rows = d3[1], Depth_cols = d3[2],
+		stringsAsFactors = FALSE
+	)
+}

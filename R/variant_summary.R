@@ -5,7 +5,11 @@
 #' @param Processed Boolean variable(Default T), if true directly readRDS("depth.RDS") or, generate and saveout "depth.RDS"
 #' @param CellSubset A vector of ATAC cell names for subsetting, default is NA
 #' @param only_Total Default is T, Only return total depth summary. Don't care about depth in different quality filtering
-#' @return this returns depth which is a list of 4 list(Total/VerySensitive/Sensitive/Specific), each contains 2 df, summarize mito coverage by Pos/Cell
+#' @return this returns depth which is a list of 4 list(Total/LS/S/VS), each contains 2 df, summarize mito coverage by Pos/Cell. 
+#'         LS = Less Stringent (was VerySensitive), S = Stringent (was Sensitive), VS = Very Stringent (was Specific).
+#'         For backward compatibility, also includes VerySensitive=LS, Sensitive=S, Specific=VS.
+#'         Automatically detects column formats: new (CellBC/Position/Total/VerySensitive/Sensitive/Specific), 
+#'         new LS/S/VS (CellBC/Position/Total/LS/S/VS), or old (V1/V2/V3/V4/V5/V6).
 #' @examples
 #' WD<-"/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor01_CD34_1_Multiomekit/MTenrichCombine/Enrich/CW_mgatk/final"
 #' DN1CD34_1.depth<-DepthSummary(WD,Processed = T)
@@ -15,40 +19,99 @@ DepthSummary<-function(path,CellSubset=NA,only_Total=T){
     message("[DepthSummary]: By default only total depth is summarized")
     QualifiedTotalCts<-data.table::fread(paste(path,"/QualifiedTotalCts",sep=""))
     print("[DepthSummary]: using testing MP version..")   
-    QualifiedTotalCts$V3 <- as.numeric(as.character(QualifiedTotalCts$V3))
-    QualifiedTotalCts$V4 <- as.numeric(as.character(QualifiedTotalCts$V4))
-    QualifiedTotalCts$V5 <- as.numeric(as.character(QualifiedTotalCts$V5))
-    QualifiedTotalCts$V6 <- as.numeric(as.character(QualifiedTotalCts$V6))
+    
+    # Check if the file is empty or has no data
+    if(nrow(QualifiedTotalCts) == 0) {
+        stop("[DepthSummary]: QualifiedTotalCts file is empty or has no data. Cannot proceed with depth summary.")
+    }
+    
+    # Handle different column formats
+    # Check if we have the new format with descriptive column names
+    if(all(c("CellBC", "Position", "Total", "VerySensitive", "Sensitive", "Specific") %in% colnames(QualifiedTotalCts))) {
+        print("[DepthSummary]: Detected new column format with headers")
+        # Use the new column names
+        cell_col <- "CellBC"
+        pos_col <- "Position"
+        total_col <- "Total"
+        ls_col <- "VerySensitive"  ## also known as LS (Less Stringent)
+        s_col <- "Sensitive"    ## also known as S (Stringent)
+        vs_col <- "Specific"     ## also known as VS (Very Stringent)
+    } else if(all(c("CellBC", "Position", "Total", "LS", "S", "VS") %in% colnames(QualifiedTotalCts))) {
+        print("[DepthSummary]: Detected new column format with LS/S/VS headers")
+        # Use the new column names with LS/S/VS
+        cell_col <- "CellBC"
+        pos_col <- "Position"
+        total_col <- "Total"
+        ls_col <- "LS"
+        s_col <- "S"
+        vs_col <- "VS"
+    } else if(all(c("V1", "V2", "V3", "V4", "V5", "V6") %in% colnames(QualifiedTotalCts))) {
+        print("[DepthSummary]: Detected old V1-V6 column format")
+        # Use the old column names
+        cell_col <- "V1"
+        pos_col <- "V2"
+        total_col <- "V3"
+        ls_col <- "V4"
+        s_col <- "V5"
+        vs_col <- "V6"
+    } else {
+        # Try to infer column structure - assume first column is cell, second is position
+        print("[DepthSummary]: Column format not recognized, attempting to infer structure")
+        if(ncol(QualifiedTotalCts) >= 6) {
+            cell_col <- colnames(QualifiedTotalCts)[1]
+            pos_col <- colnames(QualifiedTotalCts)[2]
+            total_col <- colnames(QualifiedTotalCts)[3]
+            ls_col <- colnames(QualifiedTotalCts)[4]
+            s_col <- colnames(QualifiedTotalCts)[5]
+            vs_col <- colnames(QualifiedTotalCts)[6]
+            print(paste("[DepthSummary]: Inferred columns:", cell_col, pos_col, total_col, ls_col, s_col, vs_col))
+        } else {
+            stop("[DepthSummary]: Cannot determine column structure. Expected at least 6 columns.")
+        }
+    }
+    
+    # Convert columns to numeric, handling potential character values
+    QualifiedTotalCts[[total_col]] <- as.numeric(as.character(QualifiedTotalCts[[total_col]]))
+    QualifiedTotalCts[[ls_col]] <- as.numeric(as.character(QualifiedTotalCts[[ls_col]]))
+    QualifiedTotalCts[[s_col]] <- as.numeric(as.character(QualifiedTotalCts[[s_col]]))
+    QualifiedTotalCts[[vs_col]] <- as.numeric(as.character(QualifiedTotalCts[[vs_col]]))
 
     if(!is.na(CellSubset)){
       print("Will subset cells...")
-      print(paste(length(unique(QualifiedTotalCts$V1)),"Cells in QualifiedTotalCts"))
+      print(paste(length(unique(QualifiedTotalCts[[cell_col]])),"Cells in QualifiedTotalCts"))
       print(paste(length(CellSubset),"Cells in the provided subset"))
-      print(paste(length(which(CellSubset %in% unique(QualifiedTotalCts$V1))),"Subset cells overlap in QualifiedTotalCts"))
-      QualifiedTotalCts<-subset(QualifiedTotalCts,V1 %in% CellSubset)
+      print(paste(length(which(CellSubset %in% unique(QualifiedTotalCts[[cell_col]]))),"Subset cells overlap in QualifiedTotalCts"))
+      QualifiedTotalCts<-subset(QualifiedTotalCts,QualifiedTotalCts[[cell_col]] %in% CellSubset)
+      
+      # Check if subsetting resulted in empty data
+      if(nrow(QualifiedTotalCts) == 0) {
+          stop("[DepthSummary]: No cells found in the provided subset. Cannot proceed with depth summary.")
+      }
     }else{
       print("Use all cells")
-      print(paste(length(unique(QualifiedTotalCts$V1)),"Cells in QualifiedTotalCts"))
+      print(paste(length(unique(QualifiedTotalCts[[cell_col]])),"Cells in QualifiedTotalCts"))
     }
-    Pos.MeanCov<-QualifiedTotalCts %>% group_by(V2) %>% dplyr::summarise(meanCov=mean(V3))
-    Cell.MeanCov<-QualifiedTotalCts %>% group_by(V1) %>% dplyr::summarise(meanCov=mean(V3))
+    
+    Pos.MeanCov<-QualifiedTotalCts %>% group_by(!!sym(pos_col)) %>% dplyr::summarise(meanCov=mean(!!sym(total_col)))
+    Cell.MeanCov<-QualifiedTotalCts %>% group_by(!!sym(cell_col)) %>% dplyr::summarise(meanCov=mean(!!sym(total_col)))
     depth_Total<-list(Pos.MeanCov=Pos.MeanCov,Cell.MeanCov=Cell.MeanCov)
     if (only_Total){
         return(depth_Total)
     }else{
-    Pos.MeanCov<-QualifiedTotalCts %>% group_by(V2) %>% dplyr::summarise(meanCov=mean(V4))
-    Cell.MeanCov<-QualifiedTotalCts %>% group_by(V1) %>% dplyr::summarise(meanCov=mean(V4))
+    Pos.MeanCov<-QualifiedTotalCts %>% group_by(!!sym(pos_col)) %>% dplyr::summarise(meanCov=mean(!!sym(ls_col)))
+    Cell.MeanCov<-QualifiedTotalCts %>% group_by(!!sym(cell_col)) %>% dplyr::summarise(meanCov=mean(!!sym(ls_col)))
     depth_LS<-list(Pos.MeanCov=Pos.MeanCov,Cell.MeanCov=Cell.MeanCov)
 
-    Pos.MeanCov<-QualifiedTotalCts %>% group_by(V2) %>% dplyr::summarise(meanCov=mean(V5))
-    Cell.MeanCov<-QualifiedTotalCts %>% group_by(V1) %>% dplyr::summarise(meanCov=mean(V5))
+    Pos.MeanCov<-QualifiedTotalCts %>% group_by(!!sym(pos_col)) %>% dplyr::summarise(meanCov=mean(!!sym(s_col)))
+    Cell.MeanCov<-QualifiedTotalCts %>% group_by(!!sym(cell_col)) %>% dplyr::summarise(meanCov=mean(!!sym(s_col)))
     depth_S<-list(Pos.MeanCov=Pos.MeanCov,Cell.MeanCov=Cell.MeanCov)
 
-    Pos.MeanCov<-QualifiedTotalCts %>% group_by(V2) %>% dplyr::summarise(meanCov=mean(V6))
-    Cell.MeanCov<-QualifiedTotalCts %>% group_by(V1) %>% dplyr::summarise(meanCov=mean(V6))
+    Pos.MeanCov<-QualifiedTotalCts %>% group_by(!!sym(pos_col)) %>% dplyr::summarise(meanCov=mean(!!sym(vs_col)))
+    Cell.MeanCov<-QualifiedTotalCts %>% group_by(!!sym(cell_col)) %>% dplyr::summarise(meanCov=mean(!!sym(vs_col)))
     depth_VS<-list(Pos.MeanCov=Pos.MeanCov,Cell.MeanCov=Cell.MeanCov)
 
-    depth<-list(Total=depth_Total,VerySensitive=depth_LS,Sensitive=depth_S,Specific=depth_VS)
+    depth<-list(Total=depth_Total,LS=depth_LS,S=depth_S,VS=depth_VS,
+                VerySensitive=depth_LS,Sensitive=depth_S,Specific=depth_VS)  # Backward compatibility
     message("DepthSummary get.")
     return(depth)
     }
@@ -96,7 +159,7 @@ return(Genotypes.summary)
 #' @param path The XX/final folder, the output from mitoV
 #' @param thr The thredhold of filtering T(Total),LS(Less Stringent:c=0.75,a1=2,a2=1), S(Stringent:c=0.75,a1=3,a2=2), VS(Very Stringent:c=0.75,a1=4,a2=3)"
 #' @param Processed Boolean variable (Default F), if true directly readRDS("VariantsGTSummary.RDS") or, generate and saveout "VariantsGTSummary.RDS"
-#' @return this returns depth which is a list of 4 df (Total/VerySensitive/Sensitive/Specific), each is a genotype summary
+#' @return this returns depth which is a list of 4 df (Total/LS/S/VS), each is a genotype summary
 #' @examples WD<-"/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor01_CD34_1_Multiomekit/MTenrichCombine/Enrich/CW_mgatk/final"
 #' DN1CD34_1.VariantsGTSummary<-CW_mgatk.read(WD,Processed =T)
 #' @export
@@ -144,7 +207,7 @@ if(Processed){
 #' @param thr The thredhold of filtering T(Total),LS(Less Stringent:c=0.75,a1=2,a2=1), S(Stringent:c=0.75,a1=3,a2=2), VS(Very Stringent:c=0.75,a1=4,a2=3)"
 #' @param Processed Boolean variable (Default F), if true directly readRDS("VariantsGTSummary.RDS") or, generate and saveout "VariantsGTSummary.RDS"
 #' @param edge_trim  how many bp to be trimmed, default is 4, 
-#' @return this returns depth which is a list of 4 df (Total/VerySensitive/Sensitive/Specific), each is a genotype summary
+#' @return this returns depth which is a list of 4 df (Total/LS/S/VS), each is a genotype summary
 #' @examples WD<-"/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor01_CD34_1_Multiomekit/MTenrichCombine/Enrich/CW_mgatk/final"
 #' DN1CD34_1.VariantsGTSummary<-CW_mgatk.read(WD,Processed =T)
 #' @export
@@ -208,7 +271,9 @@ GiveName<-c("UMI","Cell","Pos","Variants","Call","Ref","FamSize","GT_Cts","CSS",
 RawGenotypes.concat <- c()
 for (i in 1: length(paths)){
 RawGenotypes<-data.table::fread(paste(paths[i],"/RawGenotypes.Sensitive.StrandBalance",sep=""))
-RawGenotypes$V2 <- paste(RawGenotypes$V2, suffix[i], sep=".")
+# Use dynamic column reference instead of hardcoded V2
+cell_col <- if("Cell" %in% colnames(RawGenotypes)) "Cell" else "V2"
+RawGenotypes[[cell_col]] <- paste(RawGenotypes[[cell_col]], suffix[i], sep=".")
 RawGenotypes.concat <- rbind(RawGenotypes.concat,RawGenotypes)
 }    
 ## Add the column name
@@ -232,12 +297,17 @@ for (i in 1:length(paths)){
     depth_i<-DepthSummary(paths[i])
     pos.info <- depth_i[[1]]
     cell.info <- depth_i[[2]]
-    cell.info$V1 <- paste(cell.info$V1, suffix[i], sep=".")
+    # Use dynamic column reference instead of hardcoded V1
+    cell_col_depth <- if("CellBC" %in% colnames(cell.info)) "CellBC" else "V1"
+    cell.info[[cell_col_depth]] <- paste(cell.info[[cell_col_depth]], suffix[i], sep=".")
     Pos.MeanCov<-cbind(Pos.MeanCov,pos.info[,"meanCov",drop=F]) 
     Cell.MeanCov<-rbind(Cell.MeanCov,cell.info)
     cell.numbers<-c(cell.numbers,nrow(cell.info))
 }
-Pos.MeanCov.final<- data.frame(V2=1:16569, meanCov=rowSums(Pos.MeanCov[,2:ncol(Pos.MeanCov)] * cell.numbers)/sum(cell.numbers))  ## Compute final cov by pos
+# Use dynamic column reference instead of hardcoded V2
+pos_col_depth <- if("Position" %in% colnames(Pos.MeanCov)) "Position" else "V2"
+Pos.MeanCov.final<- data.frame(pos=1:16569, meanCov=rowSums(Pos.MeanCov[,2:ncol(Pos.MeanCov)] * cell.numbers)/sum(cell.numbers))  ## Compute final cov by pos
+colnames(Pos.MeanCov.final)[1] <- pos_col_depth
 ## add attributes
 attr(VariantsGTSummary,"depth")<-list(Pos.MeanCov=Pos.MeanCov.final, Cell.MeanCov=Cell.MeanCov)
 attr(VariantsGTSummary,"thr")<-thr
@@ -263,7 +333,7 @@ CV<-function(x){
 #' This function allows you to read raw data from XX/final folder, the output from redeemV
 #' @param path The XX/final folder, the output from mitoV
 #' @param Processed Boolean variable (Default F), if true directly readRDS("VariantsGTSummary.RDS") or, generate and saveout "VariantsGTSummary.RDS"
-#' @return this returns depth which is a list of 4 df (Total/VerySensitive/Sensitive/Specific), each is a genotype summary
+#' @return this returns depth which is a list of 4 df (Total/LS/S/VS), each is a genotype summary
 #' @examples WD<-"/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor01_CD34_1_Multiomekit/MTenrichCombine/Enrich/CW_mgatk/final"
 #' DN1CD34_1.VariantsGTSummary<-CW_mgatk.read(WD,Processed =T)
 #' @export
@@ -321,7 +391,9 @@ feature.list<-list()
 for(i in Names){
 VariantFeature0<- InputSummary[[i]] %>% group_by(Variants) %>% dplyr::summarise(CellN=n(),PositiveMean=mean(hetero),maxcts=max(Freq),CV=CV(hetero),TotalVcount=sum(Freq))
 VariantFeature0$pos<-strsplit(VariantFeature0$Variants,"_") %>% sapply(.,function(x){x[1]}) %>% as.numeric
-VariantFeature0<-merge(VariantFeature0,depth[[i]][[1]],by.x="pos",by.y="V2")   ## This generate different meanCov for each threahold
+# Use dynamic column reference instead of hardcoded V2
+pos_col_depth <- if("Position" %in% colnames(depth[[i]][[1]])) "Position" else "V2"
+VariantFeature0<-merge(VariantFeature0,depth[[i]][[1]],by.x="pos",by.y=pos_col_depth)   ## This generate different meanCov for each threahold
 VariantFeature0$TotalCov<-length(unique(InputSummary[[i]]$Cell))*VariantFeature0$meanCov
 VariantFeature0$VAF<-VariantFeature0$TotalVcount/VariantFeature0$TotalCov
 qualifiedCell<-subset(depth[["Total"]][[2]],meanCov>=QualifyCellCut)[,1,drop=T]  ## Filter Qualified cell based on total depth
@@ -335,7 +407,7 @@ VariantFeature<-merge(VariantFeature[,c("Variants","CellN","PositiveMean","maxct
 HomoVariants<-subset(VariantFeature,CellNPCT>0.75 & PositiveMean>0.75 & CV<0.01)$Variants
 VariantFeature$HomoTag<-ifelse(VariantFeature$Variants %in% HomoVariants,"Homo","Hetero")
 if (Rmvhomo){
-    VariantFeature<-subset(VariantFeature,!Variants %in% HomoVariants)
+    VariantFeature<-subset(VariantFeature,!VariantFeature$Variants %in% HomoVariants)
     print(paste(length(HomoVariants),"Homoplasmy variants to remove"))
     print(HomoVariants)
 }else{
@@ -365,10 +437,30 @@ feature.list<-c(feature.list,list(out))
 Vfilter_v4<-function(InputSummary=VariantsGTSummary,Min_Cells=2, Max_Count_perCell=2,QualifyCellCut=10){   
 VariantFeature0<- InputSummary %>% group_by(Variants) %>% dplyr::summarise(CellN=n(),PositiveMean=mean(hetero),maxcts=max(Freq),CV=CV(hetero),TotalVcount=sum(Freq))
 VariantFeature0$pos<-strsplit(VariantFeature0$Variants,"_") %>% sapply(.,function(x){x[1]}) %>% as.numeric
-VariantFeature0<-merge(VariantFeature0,attr(InputSummary,"depth")[["Pos.MeanCov"]],by.x="pos",by.y="V2")   ## This generate different meanCov for each threahold
+
+# Check if depth data has old V1/V2 format or new Position/CellBC format
+depth_data <- attr(InputSummary,"depth")
+if("V2" %in% colnames(depth_data[["Pos.MeanCov"]])) {
+    # Old format: V1, V2 columns
+    print("[Vfilter_v4]: Detected old V1/V2 column format in depth data")
+    pos_col_depth <- "V2"
+    cell_col_depth <- "V1"
+} else if("Position" %in% colnames(depth_data[["Pos.MeanCov"]])) {
+    # New format: Position, CellBC columns  
+    print("[Vfilter_v4]: Detected new Position/CellBC column format in depth data")
+    pos_col_depth <- "Position"
+    cell_col_depth <- "CellBC"
+} else {
+    # Fallback: try to infer column names
+    pos_col_depth <- colnames(depth_data[["Pos.MeanCov"]])[1]
+    cell_col_depth <- colnames(depth_data[["Cell.MeanCov"]])[1]
+    print(paste("[Vfilter_v4]: Inferred column names:", pos_col_depth, cell_col_depth))
+}
+
+VariantFeature0<-merge(VariantFeature0,depth_data[["Pos.MeanCov"]],by.x="pos",by.y=pos_col_depth)   ## This generate different meanCov for each threahold
 VariantFeature0$TotalCov<-length(unique(InputSummary$Cell))*VariantFeature0$meanCov
 VariantFeature0$totalVAF<-VariantFeature0$TotalVcount/VariantFeature0$TotalCov
-qualifiedCell<-subset(attr(InputSummary,"depth")[["Cell.MeanCov"]],meanCov>=QualifyCellCut)[,1,drop=T]  ## Filter Qualified cell based on total depth
+qualifiedCell<-subset(depth_data[["Cell.MeanCov"]],meanCov>=QualifyCellCut)[,1,drop=T]  ## Filter Qualified cell based on total depth
 InputSummary.qualified<-subset(InputSummary,Cell %in% qualifiedCell)
 VariantFeature<- InputSummary.qualified %>% group_by(Variants) %>% dplyr::summarise(CellN=n(),PositiveMean=mean(hetero),PositiveMean_cts=mean(Freq),maxcts=max(Freq),CV=CV(hetero),TotalVcount=sum(Freq))
 #print(paste(nrow(VariantFeature0),"variants to start"))
@@ -381,7 +473,7 @@ VariantFeature$HomoTag<-ifelse(VariantFeature$Variants %in% HomoVariants,"Homo",
 VariantFeature.filtered<-subset(VariantFeature,CellN>=Min_Cells & maxcts>=Max_Count_perCell)
 #print(paste("After filtering,",nrow(VariantFeature.filtered), "Variants left"))
 attr(VariantFeature.filtered,"HomoVariants")<-HomoVariants
-attr(VariantFeature.filtered,"Filter.Cell")<-c(AllCellN=nrow(attr(InputSummary,"depth")[["Cell.MeanCov"]]),QualifiedCellN=length(qualifiedCell))
+attr(VariantFeature.filtered,"Filter.Cell")<-c(AllCellN=nrow(depth_data[["Cell.MeanCov"]]),QualifiedCellN=length(qualifiedCell))
 attr(VariantFeature.filtered,"Filter.V")<-c(VN_total=nrow(VariantFeature0),VN_rmvLowQualityCell=nrow(VariantFeature),VN_filter=nrow(VariantFeature.filtered),VN_filter_rmvHomo=nrow(subset(VariantFeature.filtered,HomoTag!="Homo")))
 return(VariantFeature.filtered)
 }
@@ -405,8 +497,10 @@ if(ob@para["Threhold"]=="T"){
 }else if(ob@para["Threhold"]=="VS"){
     RawGenotypes<-read.table(paste(ob@attr$path,"/RawGenotypes.Specific.StrandBalance",sep=""))
 }    
-res<-Total %>% group_by(V2) %>% dplyr::summarise(Total=n())
-res<-RawGenotypes %>% group_by(V2) %>% dplyr::summarise(RejectRate=n()) %>% merge(res,.,by="V2")
+# Use dynamic column reference instead of hardcoded V2
+cell_col <- if("Cell" %in% colnames(Total)) "Cell" else "V2"
+res<-Total %>% group_by(!!sym(cell_col)) %>% dplyr::summarise(Total=n())
+res<-RawGenotypes %>% group_by(!!sym(cell_col)) %>% dplyr::summarise(RejectRate=n()) %>% merge(res,.,by=cell_col)
 res<-res %>% mutate(RejectRate=RejectRate/Total) %>% select(-Total)
 colnames(res)[1]<-"Cell"
 ob@CellMeta<-merge(ob@CellMeta,res,by="Cell")
@@ -428,10 +522,12 @@ Total<-read.table(paste(WD,"/RawGenotypes.Total.StrandBalance",sep=""))
 VerySensitive<-read.table(paste(WD,"/RawGenotypes.VerySensitive.StrandBalance",sep=""))
 Sensitive<-read.table(paste(WD,"/RawGenotypes.Sensitive.StrandBalance",sep=""))
 Specific<-read.table(paste(WD,"/RawGenotypes.Specific.StrandBalance",sep=""))
-res<-Total %>% group_by(V2) %>% dplyr::summarise(Total=n())
-res<-VerySensitive %>% group_by(V2) %>% dplyr::summarise(VerySensitive=n()) %>% merge(res,.,by="V2")
-res<-Sensitive %>% group_by(V2) %>% dplyr::summarise(Sensitive=n()) %>% merge(res,.,by="V2")
-res<-Specific %>% group_by(V2) %>% dplyr::summarise(Specific=n()) %>% merge(res,.,by="V2")
+# Use dynamic column reference instead of hardcoded V2
+cell_col <- if("Cell" %in% colnames(Total)) "Cell" else "V2"
+res<-Total %>% group_by(!!sym(cell_col)) %>% dplyr::summarise(Total=n())
+res<-VerySensitive %>% group_by(!!sym(cell_col)) %>% dplyr::summarise(VerySensitive=n()) %>% merge(res,.,by=cell_col)
+res<-Sensitive %>% group_by(!!sym(cell_col)) %>% dplyr::summarise(Sensitive=n()) %>% merge(res,.,by=cell_col)
+res<-Specific %>% group_by(!!sym(cell_col)) %>% dplyr::summarise(Specific=n()) %>% merge(res,.,by=cell_col)
 res<-res %>% mutate(VerySensitive=VerySensitive/Total) %>% mutate(Sensitive=Sensitive/Total) %>% mutate(Specific=Specific/Total)
 colnames(res)[1]<-"Cell"
 return(res)
@@ -502,7 +598,9 @@ add_raw_fragment <- function(redeemR,raw="RawGenotypes.Sensitive.StrandBalance")
     print(paste0("It has benn edge trimmed by ", as.character(edge_trim), " bp"))
     redeemR.raw <- read.table(paste(redeemR@attr$path,raw,sep="/"))
     filtered.variants <- unique(redeemR@GTsummary.filtered$Variants)
-    redeemR.raw.passfilter <- subset(redeemR.raw, V4 %in% filtered.variants)
+    # Use dynamic column reference instead of hardcoded V4
+    variant_col <- if("Variants" %in% colnames(redeemR.raw)) "Variants" else "V4"
+    redeemR.raw.passfilter <- subset(redeemR.raw, redeemR.raw[[variant_col]] %in% filtered.variants)
     raw.pos<- redeemR.raw.passfilter %>% add_freq_raw() %>% make_position_df_3.4() %>% filter(edge_dist>=edge_trim)
     redeemR@raw.fragment.uniqV <- raw.pos
     return(redeemR)

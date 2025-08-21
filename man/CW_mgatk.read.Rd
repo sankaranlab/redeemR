@@ -14,7 +14,7 @@ CW_mgatk.read(path, Processed = F)
 \item{Processed}{Boolean variable (Default F), if true directly readRDS("VariantsGTSummary.RDS") or, generate and saveout "VariantsGTSummary.RDS"}
 }
 \value{
-this returns depth which is a list of 4 df (Total/VerySensitive/Sensitive/Specific), each is a genotype summary
+this returns depth which is a list of 4 df (Total/LS/S/VS), each is a genotype summary
 }
 \description{
 Old Function to read in redeemV outputs

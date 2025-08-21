@@ -182,6 +182,8 @@ clean_redeem_removehot <-function(ob,hotcall= c("310_T_C","3109_T_C")){
 }
 
 
+
+
 #' Add_DepthMatrix_filter2
 #' Add Filter-2–adjusted depth matrix to a redeemR object
 #'
@@ -238,5 +240,52 @@ Add_DepthMatrix_filter2 <- function(object, QualifiedTotalCts = NULL) {
     }
     
     return(object)
+}
+
+#' Remove variants with low median depth from redeemR object
+#'
+#' @description
+#' Filters out variants from the redeemR object whose median depth (as stored in \code{@V.fitered$median_depth}) is below a specified threshold.
+#'
+#' @param ob A \code{redeemR} object with a \code{median_depth} column in \code{@V.fitered}
+#' @param min_median_depth Minimum median depth required to retain a variant (default: 10)
+#' @return The input \code{redeemR} object with low-depth variants removed from \code{@V.fitered}, \code{@GTsummary.filtered}, and matrices.
+#' @export
+clean_redeem_remove_low_median_depth <- function(ob, min_median_depth = 5) {
+    if (is.null(ob@V.fitered$median_depth)) {
+        stop("No 'median_depth' column found in ob@V.fitered. Please run add_median_depth_to_redeemR() first.")
+    }
+    
+    # Identify variants to remove
+    variant_to_remove <- ob@V.fitered %>%
+        filter(median_depth < min_median_depth) %>%
+        pull(Variants)
+        
+    # Also remove depth-corrected possible homoplasmy after fixing CellPCT considering the depth
+    # Remove variants where CellNPCT (CellN/cellN_depth_gt0) > 0.75 (i.e., possible homoplasmy)
+    depth_corrected_homo_variants <- ob@V.fitered %>%
+        filter(CellNPCT > 0.75) %>%
+        pull(Variants)
+    if (length(depth_corrected_homo_variants) > 0) {
+        message("Additionally removing ", length(depth_corrected_homo_variants), " depth-corrected possible homoplasmy variants (CellNPCT > 0.75)")
+    }
+    remove_variants <- union(variant_to_remove, depth_corrected_homo_variants)
+    # Filter V.fitered and GTsummary.filtered
+    ob@V.fitered <- subset(ob@V.fitered, !Variants %in% remove_variants)
+    ob@GTsummary.filtered <- subset(ob@GTsummary.filtered, !Variants %in% remove_variants)
+    
+    # Update UniqueV
+    ob@UniqueV <- ob@V.fitered$Variants
+    
+    # Rebuild matrices using Make_matrix
+    ob <- Make_matrix(ob, onlyhetero = T)
+    
+    # Rebuild depth matrix using Add_DepthMatrix_filter2
+    ob <- Add_DepthMatrix_filter2(ob)
+    
+    message("Removed ", length(variant_to_remove), " variants with median depth < ", min_median_depth)
+    message("Matrices and depth matrix have been rebuilt")
+    
+    return(ob)
 }
 

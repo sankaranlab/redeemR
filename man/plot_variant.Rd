@@ -14,7 +14,7 @@ plot_variant(ob, p4xlim = 50, QualifyCellCut = 10)
 \item{QualifyCellCut}{median coverage for qualified cells, default is 10}
 }
 \value{
-no returns, directly plot
+A list containing both the combined patchwork plot and individual plots
 }
 \description{
 This function allows you to plot the mito mutation metrics

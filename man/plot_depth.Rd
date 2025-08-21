@@ -9,18 +9,22 @@ plot_depth(ob, name = "", w = 10, h = 3)
 \arguments{
 \item{ob}{The redeemR object}
 
-\item{name}{The plot name shown on top}
+\item{name}{The plot name shown on top (optional, for backward compatibility)}
 
-\item{w}{the Width of the plot, default=10}
+\item{w}{the Width of the plot, default=10 (optional, for backward compatibility)}
 
-\item{h}{the height of the plot default=3}
+\item{h}{the height of the plot default=3 (optional, for backward compatibility)}
 }
 \value{
-directly out put the plot
+A list containing both the combined patchwork plot and individual plots
 }
 \description{
 This function allows you to plot both position-wise and cell-wise mito depth summary
 }
 \examples{
-plot_depth(DN1CD34_1.depth$Total,"Total")
+depth_plots <- plot_depth(redeemR_obj)
+# Use the combined plot:
+depth_plots$combined
+# Or use individual plots:
+depth_plots$position_depth | depth_plots$cell_depth
 }

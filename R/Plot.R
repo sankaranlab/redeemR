@@ -2,25 +2,57 @@
 #'
 #' This function allows you to plot both position-wise and cell-wise mito depth summary
 #' @param ob The redeemR object
-#' @param name The plot name shown on top
-#' @param w the Width of the plot, default=10
-#' @param h the height of the plot default=3
-#' @return directly out put the plot
+#' @param name The plot name shown on top (optional, for backward compatibility)
+#' @param w the Width of the plot, default=10 (optional, for backward compatibility)
+#' @param h the height of the plot default=3 (optional, for backward compatibility)
+#' @return A list containing both the combined patchwork plot and individual plots
 #' @examples
-#' plot_depth(DN1CD34_1.depth$Total,"Total")
+#' depth_plots <- plot_depth(redeemR_obj)
+#' # Use the combined plot:
+#' depth_plots$combined
+#' # Or use individual plots:
+#' depth_plots$position_depth | depth_plots$cell_depth
 #' @export
 #' @import ggplot2
-#' @importFrom gridExtra grid.arrange
+#' @importFrom patchwork plot_annotation
 plot_depth<-function(ob,name="",w=10,h=3){
+require(patchwork)
 depth=ob@DepthSummary
 d1<-depth[[1]]
 d2<-depth[[2]]
 names(d1)<-c("pos","meanCov")
 names(d2)<-c("cell","meanCov")
-options(repr.plot.width=w, repr.plot.height=h)
-p1<-ggplot(d1)+aes(pos,meanCov)+geom_point()+theme_bw()
-p2<-ggplot(d1)+aes("cell",meanCov)+geom_violin()+geom_boxplot()+theme_bw()
-gridExtra::grid.arrange(p1,p2,layout_matrix=rbind(c(1,1,1,1,1,1,2)),top=name)
+
+# Create position-wise depth plot
+p1<-ggplot(d1, aes(pos, meanCov)) + 
+    geom_point() + 
+    theme_bw() + 
+    labs(title = ifelse(name != "", name, "Position-wise Depth"),
+         x = "Position", 
+         y = "Mean Coverage")
+
+# Create cell-wise depth plot  
+p2<-ggplot(d2, aes("cell", meanCov)) + 
+    geom_violin() + 
+    geom_boxplot() + 
+    theme_bw() + 
+    labs(title = "Cell-wise Depth",
+         x = "", 
+         y = "Mean Coverage")
+
+# Combine plots using patchwork
+combined_plot <- (p1 | p2) +
+    patchwork::plot_annotation(
+        title = ifelse(name != "", name, "Depth Summary"),
+        theme = ggplot2::theme(plot.title = ggplot2::element_text(family = "sans"))
+    ) +patchwork::plot_layout(widths = c(8, 1))
+
+# Return both combined and individual plots
+return(list(
+    combined = combined_plot,
+    position_depth = p1,
+    cell_depth = p2
+))
 }
 
 #' Legacy Function to plot the mito depth summary
@@ -92,7 +124,7 @@ return(p1)
 #' @param ob The redeemR object
 #' @param p4xlim the p4 xlim(number of variant per cell), default is 50
 #' @param QualifyCellCut median coverage for qualified cells, default is 10
-#' @return no returns, directly plot
+#' @return A list containing both the combined patchwork plot and individual plots
 #' @export
 #' @import ggplot2 ggExtra
 #' @importFrom gridExtra grid.arrange
@@ -117,7 +149,11 @@ p3<-ggMarginal(p3, type = "histogram",)
 CellVar.Sum<-subset(GTSummary,Variants %in% QualifiedV$Variants & Cell %in% qualifiedCell) %>% group_by(Cell) %>% dplyr::summarise(VN=n(), maxcts=max(Freq),mediancts=median(Freq))
 p4title<-paste("Qualified Cell number:",length(qualifiedCell),"\nMedian V number is",median(CellVar.Sum$VN),"\n",CountVperCell(CellVar.Sum$VN,c,CellN=nrow(CellVar.Sum)))
 p4<-ggplot(CellVar.Sum)+aes(VN)+geom_histogram(binwidth = 1,color="black",fill="white")+xlim(0,p4xlim)+ggtitle(p4title)+theme(axis.text=element_text(size=20))+geom_vline(xintercept = median(CellVar.Sum$VN),linetype=2)
-gridExtra::grid.arrange(p1,p2,p3,p4,ncol=4,top=c)
+# Return both combined and individual plots
+gridExtra::grid.arrange(p1,p2,p3,p4,ncol=4)
+return(list(
+    p1 = p1, p2 = p2, p3 = p3, p4 = p4
+))
 }
 
 
