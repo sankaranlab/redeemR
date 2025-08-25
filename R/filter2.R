@@ -242,14 +242,23 @@ Add_DepthMatrix_filter2 <- function(object, QualifiedTotalCts = NULL) {
     return(object)
 }
 
-#' Remove variants with low median depth from redeemR object
+#' Remove variants with low median depth and depth-corrected homoplasmy
 #'
 #' @description
-#' Filters out variants from the redeemR object whose median depth (as stored in \code{@V.fitered$median_depth}) is below a specified threshold.
+#' Removes variants whose per‑variant median depth (from \code{@V.fitered$median_depth})
+#' is below a threshold, and also removes depth‑corrected possible homoplasmy
+#' (\code{CellNPCT > 0.75}). After filtering, rebuilds matrices and the depth matrix.
 #'
-#' @param ob A \code{redeemR} object with a \code{median_depth} column in \code{@V.fitered}
-#' @param min_median_depth Minimum median depth required to retain a variant (default: 10)
-#' @return The input \code{redeemR} object with low-depth variants removed from \code{@V.fitered}, \code{@GTsummary.filtered}, and matrices.
+#' @param ob A \code{redeemR} object that already has \code{median_depth} and \code{CellNPCT}
+#'   in \code{@V.fitered} (see \code{add_median_depth_to_redeemR}).
+#' @param min_median_depth Numeric. Minimum per‑variant median depth to keep (default: 5).
+#'
+#' @return The updated \code{redeemR} object with variants filtered and matrices rebuilt.
+#'
+#' @examples
+#' # ob <- add_median_depth_to_redeemR(ob)
+#' # ob <- clean_redeem_remove_low_median_depth(ob, min_median_depth = 10)
+#'
 #' @export
 clean_redeem_remove_low_median_depth <- function(ob, min_median_depth = 5) {
     if (is.null(ob@V.fitered$median_depth)) {
@@ -287,5 +296,330 @@ clean_redeem_remove_low_median_depth <- function(ob, min_median_depth = 5) {
     message("Matrices and depth matrix have been rebuilt")
     
     return(ob)
+}
+
+# ============================================================================
+# Extra filtering functions
+# ============================================================================
+
+#' Update redeemR object from GTsummary.filtered (helper)
+#'
+#' @description
+#' Synchronizes \code{@V.fitered} with \code{@GTsummary.filtered}: keeps only present variants,
+#' computes per‑variant summaries (CellN, PositiveMean, PositiveMean_cts, maxcts, CV,
+#' TotalVcount), merges them into \code{@V.fitered}, updates \code{@CellMeta} and \code{@UniqueV},
+#' and rebuilds matrices and depth matrix.
+#'
+#' @param redeemR_obj A \code{redeemR} object with a populated \code{@GTsummary.filtered}.
+#' @param QualifiedTotalCts Optional “QualifiedTotalCts” table passed to \code{Add_DepthMatrix_filter2}.
+#'
+#' @return The updated \code{redeemR} object.
+#'
+#' @examples
+#' # ob@GTsummary.filtered <- dplyr::filter(ob@GTsummary.filtered, Freq >= 2)
+#' # ob <- update_redeemR_from_GTsummary(ob)
+#'
+#' @export
+update_redeemR_from_GTsummary <- function(redeemR_obj, QualifiedTotalCts = NULL) {
+  ob <- redeemR_obj
+
+  if (!("GTsummary.filtered" %in% slotNames(ob)) || !is.data.frame(ob@GTsummary.filtered)) {
+    stop("redeemR@GTsummary.filtered is required to update V.fitered")
+  }
+
+  gts <- ob@GTsummary.filtered
+  required_cols <- c("Variants", "hetero", "Freq")
+  if (!all(required_cols %in% names(gts))) {
+    stop("GTsummary.filtered must contain columns: ", paste(required_cols, collapse = ", "))
+  }
+
+  var_feat <- gts %>%
+    dplyr::group_by(Variants) %>%
+    dplyr::summarise(
+      CellN = dplyr::n(),
+      PositiveMean = mean(hetero, na.rm = TRUE),
+      PositiveMean_cts = mean(Freq, na.rm = TRUE),
+      maxcts = max(Freq, na.rm = TRUE),
+      TotalVcount = sum(Freq, na.rm = TRUE),
+      CV = {
+        m <- mean(hetero, na.rm = TRUE)
+        if (is.na(m) || m == 0) NA_real_ else stats::sd(hetero, na.rm = TRUE) / m
+      },
+      .groups = "drop"
+    )
+  feature_cols <- c("CellN", "PositiveMean", "PositiveMean_cts", "maxcts", "CV", "TotalVcount", "meanCov")
+  orig_cols <- names(ob@V.fitered)
+  ob@V.fitered <- ob@V.fitered %>%
+    dplyr::semi_join(gts, by = "Variants") %>%
+    dplyr::select(-dplyr::any_of(feature_cols)) %>%
+    dplyr::left_join(var_feat, by = "Variants") %>%
+    dplyr::select(dplyr::any_of(orig_cols), dplyr::everything())
+
+  # Update @CellMeta using semi_join based on Cell in GTsummary
+  if ("CellMeta" %in% slotNames(ob) && is.data.frame(ob@CellMeta) && "Cell" %in% names(ob@CellMeta)) {
+    ob@CellMeta <- ob@CellMeta %>%
+      dplyr::semi_join(gts, by = "Cell")
+  }
+
+  # Update @UniqueV to unique variants from GTsummary
+  if ("UniqueV" %in% slotNames(ob)) {
+    ob@UniqueV <- unique(gts$Variants)
+  }
+
+  # Convert tibble to data frame to avoid Matrix compatibility issues
+  # The Matrix package doesn't handle tbl_df objects well, causing errors like:
+  # "*(<dgCMatrix>, <tbl_df>) is not yet implemented"
+  ob@GTsummary.filtered <- as.data.frame(ob@GTsummary.filtered)
+
+  # Rebuild matrices from filtered GTsummary
+  # onlyhetero = TRUE ensures only heteroplasmic mutations are used
+  ob <- Make_matrix(ob, onlyhetero = TRUE)
+  ob <- Add_DepthMatrix_filter2(ob, QualifiedTotalCts)
+
+  ob
+}
+
+#' Filter by LIS score and VAF threshold (Wang et al., 2025, Genome Biology)
+#'
+#' @description
+#' Keeps variants with VAF (\code{hetero}) ≥ \code{hetero_cutoff} and LIS > \code{lis_cutoff},
+#' enforces a minimum number of cells per variant, updates \code{@GTsummary.filtered} and
+#' \code{@V.fitered}, then rebuilds matrices and depth matrix.
+#'
+#' @param redeemR_obj A \code{redeemR} object.
+#' @param lis_cutoff Numeric LIS threshold (default 0.6). LIS ≈ mean(hetero) / var(hetero).
+#' @param hetero_cutoff Numeric VAF (hetero) threshold (default 0.05).
+#' @param min_cells_per_variant Integer; minimum rows per variant (default 2).
+#' @param QualifiedTotalCts Optional “QualifiedTotalCts” table for depth rebuilding.
+#' @param filter_name Optional label passed to \code{print_redeemR_matrix_dims}.
+#'
+#' @return The updated \code{redeemR} object.
+#'
+#' @export
+filter_redeemR_by_LIS <- function(redeemR_obj, lis_cutoff = 0.6, hetero_cutoff = 0.05, min_cells_per_variant = 2, QualifiedTotalCts = NULL, filter_name = NULL) {
+  ob <- redeemR_obj
+  gts <- ob@GTsummary.filtered
+  gts <- gts %>% dplyr::filter(hetero > hetero_cutoff)
+  lis_tbl <- gts %>%
+    dplyr::group_by(Variants) %>%
+    dplyr::summarise(
+      mean_hetero = mean(hetero, na.rm = TRUE),
+      var_hetero  = stats::var(hetero, na.rm = TRUE),
+      LIS         = ifelse(is.na(var_hetero) | var_hetero == 0, NA_real_, mean_hetero / (1+var_hetero)),
+      .groups = "drop"
+    )
+
+  keep_vars <- lis_tbl %>%
+    dplyr::filter(!is.na(LIS) & LIS >= lis_cutoff) %>%
+    dplyr::pull(Variants)
+
+  gts2 <- gts %>% dplyr::filter(Variants %in% keep_vars) %>%
+    dplyr::group_by(Variants) %>%
+    dplyr::filter(dplyr::n() >= min_cells_per_variant) %>%
+    dplyr::ungroup()
+  ob@GTsummary.filtered <- gts2
+  
+  ob <- update_redeemR_from_GTsummary(ob, QualifiedTotalCts)
+  
+  # Print matrix dimensions
+  print_redeemR_matrix_dims(ob, filter_name)
+  
+  ob
+}
+
+#' Filter by VAF (hetero) threshold on GTsummary
+#'
+#' @description
+#' Keeps rows with \code{hetero >= hetero_cutoff} in \code{@GTsummary.filtered}, enforces a
+#' minimum number of rows per variant, updates \code{@V.fitered}, and rebuilds matrices and depth matrix.
+#'
+#' @param redeemR_obj A \code{redeemR} object.
+#' @param hetero_cutoff Numeric VAF threshold.
+#' @param min_cells_per_variant Integer; minimum rows per variant (default 2).
+#' @param QualifiedTotalCts Optional “QualifiedTotalCts” for depth rebuilding.
+#' @param filter_name Optional label for matrix-dimension printing.
+#'
+#' @return The updated \code{redeemR} object.
+#'
+#' @export
+filter_redeemR_by_hetero <- function(redeemR_obj, hetero_cutoff, min_cells_per_variant = 2, QualifiedTotalCts = NULL, filter_name = NULL) {
+  ob <- redeemR_obj
+  gts <- ob@GTsummary.filtered
+
+  ob@GTsummary.filtered <- gts %>%
+    dplyr::filter(hetero >= hetero_cutoff) %>%
+    dplyr::group_by(Variants) %>%
+    dplyr::filter(dplyr::n() >= min_cells_per_variant) %>%
+    dplyr::ungroup()
+
+  ob <- update_redeemR_from_GTsummary(ob, QualifiedTotalCts)
+  
+  # Print matrix dimensions
+  print_redeemR_matrix_dims(ob, filter_name)
+  
+  ob
+}
+
+#' Filter by UMI count (Freq) threshold on GTsummary
+#'
+#' @description
+#' Keeps rows with \code{Freq >= umi_cutoff} in \code{@GTsummary.filtered}, enforces a minimum
+#' number of rows per variant, updates \code{@V.fitered}, and rebuilds matrices and depth matrix.
+#'
+#' @param redeemR_obj A \code{redeemR} object.
+#' @param umi_cutoff Integer UMI threshold (default 2).
+#' @param min_cells_per_variant Integer; minimum rows per variant (default 2).
+#' @param QualifiedTotalCts Optional “QualifiedTotalCts” for depth rebuilding.
+#' @param filter_name Optional label for matrix-dimension printing.
+#'
+#' @return The updated \code{redeemR} object.
+#'
+#' @export
+filter_redeemR_by_UMI <- function(redeemR_obj, umi_cutoff = 2, min_cells_per_variant = 2, QualifiedTotalCts = NULL, filter_name = NULL) {
+  ob <- redeemR_obj
+  gts <- ob@GTsummary.filtered
+
+  ob@GTsummary.filtered <- gts %>%
+    dplyr::filter(Freq >= umi_cutoff) %>%
+    dplyr::group_by(Variants) %>%
+    dplyr::filter(dplyr::n() >= min_cells_per_variant) %>%
+    dplyr::ungroup()
+
+  ob <- update_redeemR_from_GTsummary(ob, QualifiedTotalCts)
+  
+  # Print matrix dimensions
+  print_redeemR_matrix_dims(ob, filter_name)
+  
+  ob
+}
+
+#' Filter by mean UMI count threshold on GTsummary
+#'
+#' @description
+#' Keeps variants with \code{mean(Freq) >= mean_count_cutoff} across rows in \code{@GTsummary.filtered},
+#' enforces a minimum number of rows per variant, updates \code{@V.fitered}, and rebuilds
+#' matrices and depth matrix.
+#'
+#' @param redeemR_obj A \code{redeemR} object.
+#' @param mean_count_cutoff Numeric mean UMI threshold (default 2).
+#' @param min_cells_per_variant Integer; minimum rows per variant (default 2).
+#' @param QualifiedTotalCts Optional “QualifiedTotalCts” for depth rebuilding.
+#' @param filter_name Optional label for matrix-dimension printing.
+#'
+#' @return The updated \code{redeemR} object.
+#'
+#' @export
+filter_redeemR_by_meancount <- function(redeemR_obj, mean_count_cutoff = 2, min_cells_per_variant = 2, QualifiedTotalCts = NULL, filter_name = NULL) {
+  ob <- redeemR_obj
+  gts <- ob@GTsummary.filtered
+
+  # Calculate mean UMI count per variant
+  variant_means <- gts %>%
+    dplyr::group_by(Variants) %>%
+    dplyr::summarise(
+      mean_freq = mean(Freq, na.rm = TRUE),
+      .groups = "drop"
+    )
+
+  # Keep variants with mean UMI count >= threshold
+  keep_vars <- variant_means %>%
+    dplyr::filter(mean_freq >= mean_count_cutoff) %>%
+    dplyr::pull(Variants)
+
+  # Filter GTsummary and enforce minimum rows per variant
+  ob@GTsummary.filtered <- gts %>%
+    dplyr::filter(Variants %in% keep_vars) %>%
+    dplyr::group_by(Variants) %>%
+    dplyr::filter(dplyr::n() >= min_cells_per_variant) %>%
+    dplyr::ungroup()
+
+  ob <- update_redeemR_from_GTsummary(ob, QualifiedTotalCts)
+  
+  # Print matrix dimensions
+  print_redeemR_matrix_dims(ob, filter_name)
+  
+  ob
+}
+
+#' Filter by predefined rules using GTsummary data
+#'
+#' @description
+#' Applies rule‑based filtering on \code{@GTsummary.filtered} using UMI counts and depth:
+#' keeps rows with \code{Freq >= 2}; for \code{Freq == 1}, keeps only rows from \code{good_variants}
+#' (variants meeting UMI‑based criteria) and with \code{depth <= max_depth}. Enforces minimum
+#' rows per variant, then updates \code{@V.fitered} and rebuilds matrices.
+#'
+#' @param redeemR_obj A \code{redeemR} object.
+#' @param rule Character; one of \code{"ruleA"}, \code{"ruleB"}, \code{"ruleC"}.
+#' @param min_cells_per_variant Integer; minimum rows per variant (default 2).
+#' @param QualifiedTotalCts Optional “QualifiedTotalCts” for depth rebuilding.
+#' @param filter_name Optional label for matrix-dimension printing.
+#'
+#' @return The updated \code{redeemR} object.
+#'
+#' @export
+filter_redeemR_by_rules <- function(redeemR_obj, rule = "ruleA", min_cells_per_variant = 2, QualifiedTotalCts = NULL, filter_name = NULL) {
+  ob <- redeemR_obj
+  gts <- ob@GTsummary.filtered
+
+  # Define rule parameters
+  rule_params <- list(
+    ruleA = list(max_mean_umi_gt1 = 4, min_prop_2_3 = 0.3, max_depth = 70),
+    ruleB = list(max_mean_umi_gt1 = 5, min_prop_2_3 = 0.1, max_depth = 100),
+    ruleC = list(max_mean_umi_gt1 = 8, min_prop_2_3 = 0.1, max_depth = 150)
+  )
+  
+  if (!rule %in% names(rule_params)) {
+    stop("Invalid rule. Must be one of: ", paste(names(rule_params), collapse = ", "))
+  }
+  
+  params <- rule_params[[rule]]
+  
+  # Calculate variant-level features from GTsummary Freq column (UMI counts)
+  variant_features <- gts %>%
+    dplyr::group_by(Variants) %>%
+    dplyr::summarise(
+      mean_umi_gt1 = {
+        umi_gt1 <- Freq[Freq > 1]
+        if (length(umi_gt1) == 0) 1 else mean(umi_gt1, na.rm = TRUE)
+      },
+      prop_2_3 = sum(Freq %in% c(2, 3)) / dplyr::n(),
+      .groups = "drop"
+    )
+  
+  # Identify good variants based on UMI criteria
+  good_variants <- variant_features %>%
+    dplyr::filter(
+      (mean_umi_gt1 > 1 & 
+       mean_umi_gt1 <= params$max_mean_umi_gt1 & 
+       prop_2_3 > params$min_prop_2_3)
+    ) %>%
+    dplyr::pull(Variants)
+  
+  # Filter GTsummary: keep good variants regardless of UMI, but for non-good variants require Freq > 1
+  # First, keep all rows with Freq > 2
+  gt_high <- gts %>%
+    dplyr::filter(Freq >= 2)
+  
+  # Next, for Freq == 1, keep only those with good_variants and depth <= rule_params$max_depth
+  gt_one <- gts %>%
+    dplyr::filter(
+      Freq == 1,
+      Variants %in% good_variants,
+      depth <= params$max_depth
+    )
+  
+    # Combine
+  ob@GTsummary.filtered <- dplyr::bind_rows(gt_high, gt_one) %>%
+    dplyr::group_by(Variants) %>%
+    dplyr::filter(dplyr::n() >= min_cells_per_variant) %>%
+    dplyr::ungroup()
+  
+  ob <- update_redeemR_from_GTsummary(ob, QualifiedTotalCts)
+  
+  # Print matrix dimensions
+  print_redeemR_matrix_dims(ob, filter_name)
+  
+  ob
 }
 

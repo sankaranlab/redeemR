@@ -157,9 +157,9 @@ parser$add_argument("-t", "--thr",   default="S",   choices=c("T","LS","S","VS")
 parser$add_argument("-e", "--edge-trim", type="integer", default=9,
                     help="Minimum edge distance")
 parser$add_argument("-d", "--min-variant-depth", type="integer", default=5,
-                    help="Minimum median depth threshold for variant filtering (default: 10)")
+                    help="Minimum median depth threshold for variant filtering (default: 5)")
 parser$add_argument("--do-median-depth-filter", action="store_true",
-                    help="Skip median depth filtering step")
+                    help="Do median depth filtering step")
 parser$add_argument("--do-qc", action="store_true",
                     help="Run filter2 QC and return report")
 

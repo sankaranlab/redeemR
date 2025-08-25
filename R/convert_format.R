@@ -188,12 +188,12 @@ convert_redeem_matrix_long <- function(mat_var, mat_depth, cell_whitelist = NULL
     } else {
       mat_var_filtered<-mat_var[row.names(mat_var) %in% cell_whitelist,]
     }
-    mat_var_filtered <- mat_var_filtered[,Matrix::colSums(mat_var_filtered)>=2]
-    mat_var_filtered <- mat_var_filtered[Matrix::rowSums(mat_var_filtered)>0,]
+    mat_var_filtered <- mat_var_filtered[,Matrix::colSums(mat_var_filtered > 0)>=2]
+    mat_var_filtered <- mat_var_filtered[Matrix::rowSums(mat_var_filtered) > 0,]
     # Keep the same rows and columns for depth mat
     mat_depth_filtered<-mat_depth[row.names(mat_var_filtered),colnames(mat_var_filtered)]
-    print(glue("The minimum variant has at least {min(Matrix::colSums(mat_var_filtered))} cells sharing it;
-    the minimum ecll has at least {min(Matrix::rowSums(mat_var_filtered))} variants"))
+    print(glue("The minimum variant has at least {min(Matrix::colSums(mat_var_filtered > 0))} cells sharing it;
+    the minimum cell has at least {min(Matrix::rowSums(mat_var_filtered))} variants"))
     print(glue("Finally, after filtering, {nrow(mat_var_filtered)} cells, {ncol(mat_var_filtered)} variants"))    
 
     # Convert sparse matrix to dense matrix - var and depth

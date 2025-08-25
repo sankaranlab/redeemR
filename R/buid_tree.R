@@ -1807,3 +1807,68 @@ Clonal_Variants<-c(Clonal_Variants,list(stat))
 names(Clonal_Variants)<-unique(meta$Clone_merge)
 return(Clonal_Variants)
 }  
+
+
+#' Compute Distance Matrix from Heteroplasmy Matrix
+#'
+#' Computes distance matrix between cells using either Manhattan or Euclidean distance.
+#'
+#' @param heteroplasmy_matrix A matrix of cell-by-variant heteroplasmy values
+#' @param dist_method The distance method to use: "manhattan" or "euclidean" (default: "manhattan")
+#' @return A distance matrix (dist object)
+#' @export
+compute_distance_matrix <- function(heteroplasmy_matrix, dist_method = "manhattan") {
+  if (!dist_method %in% c("manhattan", "euclidean")) {
+    stop("dist_method must be either 'manhattan' or 'euclidean'")
+  }
+  
+  # Add outgroup row (all zeros) for rooting
+  vmat_with_outgroup <- rbind(heteroplasmy_matrix, outgroup = 0)
+  dist_mat <- vmat_with_outgroup %>% as.matrix %>% dist(method = dist_method)
+  
+  return(dist_mat)
+}
+
+#' Create Rooted Phylogenetic Tree from Distance Matrix
+#'
+#' Creates a rooted phylogenetic tree from a distance matrix using either NJ (Neighbor-Joining) 
+#' or UPGMA (Unweighted Pair Group Method with Arithmetic Mean) method.
+#'
+#' @param dist_mat A distance matrix (dist object)
+#' @param method Character string specifying tree construction method: "nj" (default) or "upgma"
+#' @return A rooted phylo object
+#' @export
+create_rooted_tree <- function(dist_mat, method = "nj") {
+  if (!method %in% c("nj", "upgma")) {
+    stop("method must be either 'nj' or 'upgma'")
+  }
+  
+  # Create tree based on method
+  if (method == "nj") {
+    tree <- ape::nj(dist_mat)
+  } else {
+    # For UPGMA: use phangorn::upgma which returns a phylo object directly
+    tree <- phangorn::upgma(dist_mat)
+  }
+  
+  # Root the tree using outgroup and remove it
+  tree <- tree %>% 
+    ape::root(outgroup = 'outgroup') %>% 
+    ape::drop.tip('outgroup')
+  
+  return(tree)
+}
+
+#' Build Manhattan Tree
+#'
+#' Builds a Manhattan tree from a heteroplasmy matrix
+#'
+#' @param matrices A list of matrices containing heteroplasmy values
+#' @param nj Logical indicating whether to build NJ tree (default: TRUE)
+#' @return A list of rooted phylo objects
+#' @export
+Build_Manhattan_Tree <- function(heteroplasmy_matrix) {
+    manhattan_dist <- compute_distance_matrix(heteroplasmy_matrix, dist_method = "manhattan")
+    create_rooted_tree(manhattan_dist, method = "nj")
+}
+

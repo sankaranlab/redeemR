@@ -816,8 +816,12 @@ CountOverlap_Adj<-function(M,n=0){
 #' print_redeemR_matrix_dims(redeemR_object)
 #'
 #' @export
-print_redeemR_matrix_dims <- function(ob) {
-    cat("=== redeemR Matrix Dimensions ===\n")
+print_redeemR_matrix_dims <- function(ob, sample_name = NULL) {
+    if (is.null(sample_name) || identical(sample_name, "")) {
+        cat("=== redeemR Matrix Dimensions ===\n")
+    } else {
+        cat(paste0("=== redeemR Matrix Dimensions (", sample_name, ") ===\n"))
+    }
     cat("Cts.Mtx:      ", nrow(ob@Cts.Mtx), "cells x", ncol(ob@Cts.Mtx), "variants\n")
     cat("Cts.Mtx.bi:   ", nrow(ob@Cts.Mtx.bi), "cells x", ncol(ob@Cts.Mtx.bi), "variants\n")
     if (!is.null(ob@Ctx.Mtx.depth)) {
