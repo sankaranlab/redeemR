@@ -361,3 +361,216 @@ run_redeem_qc <- function(redeem, homosets, hotcall= c("310_T_C","9979_G_A","310
 
     return(list(plots=plots, transversion_rate=transversion_rate, report_metric=report_metric))
 }
+
+
+
+
+#' plot_tree_heatmap_teng_cw
+#'
+#' Draw a composite phylogenetic tree + cell-by-variant heatmap for mtDNA data.
+#'
+#' This implementation is derived from the mitodrift visualization by Teng
+#' ("plot_redeem_heatmap"), adapted and extended to support multiple stacked
+#' annotation bars and consolidated legends.
+#'
+#' @param gtree A phylo or tbl_graph object representing the clonal tree.
+#' @param df_var A data.frame with at least columns: cell, variant, a (alt), d (depth),
+#'   or a precomputed vaf column in [0,1].
+#' @param draw_depthbranch_width Numeric scaling for branch width drawing.
+#' @param root_edge Logical; whether to include a root edge.
+#' @param dot_size Numeric size for node/tip dots.
+#' @param ylim Optional y limits.
+#' @param clade_annot Optional data.frame of clade annotations (columns: cell, clade[, score]).
+#' @param tip_annot Optional data.frame of tip annotations (columns: cell, annot).
+#' @param title Optional plot title.
+#' @param label_site Logical; label mutational sites on the tree.
+#' @param cell_annot Either a single data.frame (columns: cell, annot) or a named list
+#'   of such data.frames; each element produces a stacked annotation bar.
+#' @param tip_lab,node_lab Logical; show tip/node labels.
+#' @param layered Logical; layered rendering for annotation bars.
+#' @param annot_bar_height,clade_bar_height Numeric heights for stacked bars.
+#' @param het_max Numeric VAF max for color scale.
+#' @param conf_min,conf_max Numeric limits for node confidence fill.
+#' @param conf_label Logical; render numeric confidence labels.
+#' @param branch_length Logical; use branch lengths if available.
+#' @param node_conf Logical; display internal node confidence.
+#' @param annot_scale Optional scaling for annotation bars.
+#' @param annot_legend,label_group Logical flags controlling annotation display.
+#' @param annot_legend_title Character legend title used when cell_annot is a single table
+#'   (named list elements use their own names as titles).
+#' @param text_size,label_size Numeric text sizes.
+#' @param mut Optional column name in node data to color nodes by.
+#' @param post_max,mark_low_cov,facet_by_group,flip Additional display flags.
+#'
+#' @return A patchwork/ggplot object combining tree, heatmap, and optional bars.
+#'
+#' @export
+#' @import ggplot2 ggraph ggtree patchwork
+plot_tree_heatmap_teng_cw <- function (gtree, df_var, draw_depth, branch_width = 0.25, root_edge = TRUE, 
+    dot_size = 1, ylim = NULL, clade_annot = NULL, tip_annot = NULL, 
+    title = NULL, label_site = FALSE, cell_annot = NULL, tip_lab = FALSE, 
+    node_lab = FALSE, layered = FALSE, annot_bar_height = 0.1, 
+    clade_bar_height = 1, het_max = 0.1, conf_min = 0.5, conf_max = 0.5, 
+    conf_label = FALSE, branch_length = TRUE, node_conf = FALSE, 
+    annot_scale = NULL, annot_legend = FALSE, label_group = FALSE, 
+    annot_legend_title = "", text_size = 3, label_size = 1, mut = NULL, 
+    post_max = FALSE, mark_low_cov = FALSE, facet_by_group = FALSE, 
+    flip = FALSE) 
+{
+    if (inherits(gtree, "tbl_graph")) {
+        phylo = to_phylo_reorder(gtree)
+    }
+    else {
+        phylo = gtree
+        node_conf = FALSE
+    }
+    if (!branch_length) {
+        phylo$edge.length = NULL
+    }
+    p_tree = phylo %>% ggtree(ladderize = TRUE, linewidth = branch_width, 
+        right = flip) + theme_bw() + theme(plot.margin = margin(0, 
+        0, 0, 0, unit = "mm"), axis.title.x = element_blank(), 
+        axis.line.x = element_blank(), axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(), axis.text.y = element_text(), 
+        axis.line.y = element_line(), axis.ticks.y = element_line(), 
+        axis.ticks.length.x = unit(0, "pt"), panel.background = element_rect(fill = "transparent", 
+            colour = NA), plot.background = element_rect(fill = "transparent", 
+            color = NA), panel.grid = element_blank()) + coord_flip() + 
+        scale_x_reverse(expand = expansion(mult = 0.05)) + scale_y_continuous(expand = expansion(add = 1)) + 
+        ggtitle(title)
+
+    # initialize composition containers BEFORE adding optional components
+    heights <- c(1)
+    plot_components <- list(p_tree)
+    if (!is.null(mut)) {
+        dat = gtree %>% activate(nodes) %>% as.data.frame() %>% 
+            select(all_of(c("name", p_v = mut)))
+        p_tree = p_tree %<+% dat + ggraph::geom_node_point(aes(color = p_v), 
+            size = dot_size, stroke = 0) + scale_color_gradient(limits = c(0, 
+            het_max), oob = scales::oob_squish)
+    }
+    if (node_conf) {
+        dat = gtree %>% activate(nodes) %>% mutate(isRoot = node_is_root()) %>% 
+            as.data.frame() %>% select(any_of(c("name", "isRoot", 
+            "conf")))
+        if ("conf" %in% colnames(dat)) {
+            p_tree = p_tree %<+% dat + geom_nodepoint(aes(fill = conf, 
+                subset = !isTip & !isRoot, x = branch), size = dot_size, 
+                pch = 22, stroke = 0) + scale_fill_gradient(low = "white", 
+                high = "firebrick", limits = c(conf_min, conf_max), 
+                oob = scales::oob_squish)
+            if (conf_label) {
+                p_tree = p_tree + geom_text2(aes(label = round(conf, 
+                  2), x = branch, subset = !isTip & !isRoot), 
+                  size = text_size, hjust = 0, vjust = 0.25)
+            }
+        }
+    }
+    if (!is.null(tip_annot)) {
+        dat = tip_annot %>% select(any_of(c(name = "cell", "annot")))
+        p_tree = p_tree %<+% dat + geom_tippoint(aes(color = annot, 
+            subset = !is.na(annot)), size = dot_size, pch = 19, 
+            show.legend = FALSE)
+    }
+    if (tip_lab) {
+        p_tree = p_tree + geom_tiplab(size = label_size, vjust = 0.5, 
+            hjust = 1.2, angle = 90) + scale_x_reverse(expand = expansion(mult = c(0.15, 
+            0.05)))
+    }
+    if (node_lab) {
+        p_tree = p_tree + geom_text2(aes(label = label, subset = !isTip, 
+            x = branch), size = label_size, vjust = 0.5, hjust = 0.5)
+    }
+    if (!"vaf" %in% colnames(df_var)) {
+        df_var = df_var %>% mutate(vaf = a/d)
+    }
+    cell_order = p_tree$data %>% filter(isTip) %>% arrange(y) %>% 
+        pull(label)
+    mut_order = order_muts(cell_order, df_var)
+    df_var = df_var %>% filter(cell %in% cell_order) %>% mutate(variant = factor(variant, 
+        rev(mut_order))) %>% mutate(cell = factor(as.integer(factor(cell, 
+        cell_order)), 1:length(cell_order)))
+    p_heatmap = df_var %>% ggplot(aes(x = cell, y = variant, 
+        fill = vaf)) + geom_raster() + theme_bw() + theme(plot.margin = margin(0, 
+        1, 0, 0, unit = "mm"), axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank(), axis.ticks.y = element_blank(), 
+        axis.text.y = element_text(size = text_size), panel.background = element_rect(fill = "transparent", 
+            colour = NA), plot.background = element_rect(fill = "transparent"), 
+        panel.grid = element_blank()) + scale_x_discrete(expand = expansion(add = 1), 
+        drop = F) + scale_y_discrete(expand = expansion(mult = 0.01)) + 
+        scale_fill_gradient(low = "white", high = "red", limits = c(0, 
+            het_max), oob = scales::oob_squish) + guides(fill = guide_colorbar(title = "VAF")) + 
+        xlab(paste0("cells (n=", length(cell_order), ")")) + 
+        ylab(paste0("variants (n=", length(unique(df_var$variant)), 
+            ")"))
+    if (facet_by_group) {
+        p_heatmap = p_heatmap + facet_grid(group ~ ., scales = "free_y", 
+            space = "free_y") + theme(panel.spacing.y = unit(0, 
+            "mm"))
+    }
+    if (mark_low_cov) {
+        p_heatmap = p_heatmap + geom_point(data = df_var %>% 
+            filter(d < 5), pch = 4, size = dot_size)
+    }
+    if (!is.null(clade_annot)) {
+        if ("score" %in% colnames(clade_annot)) {
+            show.legend = TRUE
+        }
+        else {
+            clade_annot = clade_annot %>% mutate(score = 1)
+            show.legend = FALSE
+        }
+        p_clade = clade_annot %>% mutate(cell = factor(as.integer(factor(cell, 
+            cell_order)), 1:length(cell_order))) %>% ggplot(aes(x = cell, 
+            y = factor(clade), fill = score)) + geom_raster(show.legend = show.legend) + 
+            theme_bw() + theme(axis.text.x = element_blank(), 
+            axis.text.y = element_text(size = text_size), axis.title = element_blank(), 
+            axis.ticks = element_blank(), panel.grid = element_blank(), 
+            plot.margin = margin(1, 0, 0, 0, unit = "mm"), ) + 
+            scale_x_discrete(expand = expansion(add = 1), drop = F) + 
+            scale_y_discrete(expand = expansion(add = 1))
+        plot_components <- c(plot_components, list(p_clade))
+        heights <- c(heights, clade_bar_height)
+    }
+    if (!is.null(cell_annot)) {
+        .make_bar <- function(df, title_label) {
+            if (!is.data.frame(df) || !all(c("cell","annot") %in% names(df))) {
+                stop("cell_annot items must be data.frames with columns 'cell' and 'annot'")
+            }
+            df %>%
+              dplyr::filter(cell %in% phylo$tip.label) %>%
+              dplyr::mutate(cell = factor(cell, cell_order)) %>%
+              annot_bar(
+                legend       = TRUE,
+                label_group  = label_group,
+                label_size   = text_size/2,
+                annot_scale  = annot_scale,
+                legend_title = title_label,
+                layered      = layered
+              )
+        }
+
+        if (is.list(cell_annot)) {
+            bar_names <- names(cell_annot)
+            if (is.null(bar_names)) bar_names <- rep(annot_legend_title, length(cell_annot))
+            bar_list <- mapply(
+              function(df, nm) .make_bar(df, nm),
+              cell_annot, bar_names,
+              SIMPLIFY = FALSE
+            )
+            plot_components <- c(plot_components, bar_list)
+            heights <- c(heights, rep(annot_bar_height, length(bar_list)))
+        } else {
+            p_bar <- .make_bar(cell_annot, annot_legend_title)
+            plot_components <- c(plot_components, list(p_bar))
+            heights <- c(heights, annot_bar_height)
+        }
+    }
+    plot_components <- c(plot_components, list(p_heatmap))
+    heights <- c(heights, 2)
+    wrap_plots(plot_components) + plot_layout(heights = heights, guides = "collect") &
+        theme(legend.position = "right")
+}
+
+
+

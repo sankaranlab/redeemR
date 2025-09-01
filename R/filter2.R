@@ -623,3 +623,30 @@ filter_redeemR_by_rules <- function(redeemR_obj, rule = "ruleA", min_cells_per_v
   ob
 }
 
+#' Subset redeemR object to a whitelist of cells and rebuild matrices
+#'
+#' @description
+#' Filters \code{@GTsummary.filtered} to the provided set of cells, then
+#' synchronizes \code{@V.fitered}, updates metadata, and rebuilds matrices and
+#' the depth matrix via \code{update_redeemR_from_GTsummary}. Finally prints
+#' matrix dimensions (optionally labeled) and returns the updated object.
+#'
+#' @param redeemR_obj A \code{redeemR} object.
+#' @param cell_whitelist Character vector of cell barcodes to keep.
+#' @param QualifiedTotalCts Optional “QualifiedTotalCts” table forwarded to
+#'   \code{Add_DepthMatrix_filter2} during rebuild.
+#' @param filter_name Optional label passed to \code{print_redeemR_matrix_dims}.
+#'
+#' @return The updated \code{redeemR} object restricted to the whitelist.
+#'
+#' @examples
+#' # ob <- subset_redeem(ob, cell_whitelist = c("AAAC...", "AAAG..."))
+#'
+#' @export
+#' @importFrom dplyr filter
+subset_redeem <- function(redeemR_obj, cell_whitelist, QualifiedTotalCts = NULL, filter_name = NULL){
+    redeemR_obj@GTsummary.filtered<-redeemR_obj@GTsummary.filtered %>% filter(Cell %in% cell_whitelist)
+    redeemR_obj <- update_redeemR_from_GTsummary(redeemR_obj, QualifiedTotalCts)
+    print_redeemR_matrix_dims(redeemR_obj, filter_name)
+    return(redeemR_obj)
+}
