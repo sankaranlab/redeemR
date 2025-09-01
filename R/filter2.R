@@ -230,13 +230,13 @@ Add_DepthMatrix_filter2 <- function(object, QualifiedTotalCts = NULL) {
     # change back the names
     colnames(DepthMatrix) = colnames(DepthMatrix) %>% stringr::str_remove_all('_') %>% paste0('Variants', .)
 
-    if (all(dim(object@Cts.Mtx.bi)==dim(DepthMatrix))){
+    if (all(colnames(object@Cts.Mtx) %in% colnames(DepthMatrix)) & all(rownames(object@Cts.Mtx) %in% rownames(DepthMatrix))){
         message("[Step 3] Assigning DepthMatrix to object@Ctx.Mtx.depth.filter2")
-        object@Ctx.Mtx.depth<-DepthMatrix[row.names(object@Cts.Mtx.bi),colnames(object@Cts.Mtx.bi)]
+        object@Ctx.Mtx.depth<-DepthMatrix[rownames(object@Cts.Mtx),colnames(object@Cts.Mtx)]
     }else{
-        print(dim(object@Cts.Mtx.bi))
+        print(dim(object@Cts.Mtx))
         print(dim(DepthMatrix))
-        print("Check the input QualifiedTotalCts, the dimension cannot match")
+        print("Missing variants or cells in DepthMatrix")
     }
     
     return(object)
