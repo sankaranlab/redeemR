@@ -118,6 +118,110 @@ DepthSummary<-function(path,CellSubset=NA,only_Total=T){
 }
 
 
+#' Function to count cells with non-zero coverage per position
+#'
+#' This function creates a lookup table showing how many cells have non-zero coverage at each position for each threshold
+#' @param path The XX/final folder, the output from mitoV
+#' @param CellSubset A vector of ATAC cell names for subsetting, default is NA
+#' @return A dataframe with Position and counts of cells with non-zero coverage for each threshold (Total, LS, S, VS)
+#' @examples
+#' WD<-"/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor01_CD34_1_Multiomekit/MTenrichCombine/Enrich/CW_mgatk/final"
+#' pos_coverage<-PosCoverageCellCount(WD)
+#' @export
+#' @import dplyr
+PosCoverageCellCount<-function(path,CellSubset=NA){
+    message("[PosCoverageCellCount]: Counting cells with non-zero coverage per position")
+    QualifiedTotalCts<-data.table::fread(paste(path,"/QualifiedTotalCts",sep=""))
+    
+    # Check if the file is empty or has no data
+    if(nrow(QualifiedTotalCts) == 0) {
+        stop("[PosCoverageCellCount]: QualifiedTotalCts file is empty or has no data.")
+    }
+    
+    # Handle different column formats
+    if(all(c("CellBC", "Position", "Total", "VerySensitive", "Sensitive", "Specific") %in% colnames(QualifiedTotalCts))) {
+        print("[PosCoverageCellCount]: Detected new column format with headers")
+        cell_col <- "CellBC"
+        pos_col <- "Position"
+        total_col <- "Total"
+        ls_col <- "VerySensitive"
+        s_col <- "Sensitive"
+        vs_col <- "Specific"
+    } else if(all(c("CellBC", "Position", "Total", "LS", "S", "VS") %in% colnames(QualifiedTotalCts))) {
+        print("[PosCoverageCellCount]: Detected new column format with LS/S/VS headers")
+        cell_col <- "CellBC"
+        pos_col <- "Position"
+        total_col <- "Total"
+        ls_col <- "LS"
+        s_col <- "S"
+        vs_col <- "VS"
+    } else if(all(c("V1", "V2", "V3", "V4", "V5", "V6") %in% colnames(QualifiedTotalCts))) {
+        print("[PosCoverageCellCount]: Detected old V1-V6 column format")
+        cell_col <- "V1"
+        pos_col <- "V2"
+        total_col <- "V3"
+        ls_col <- "V4"
+        s_col <- "V5"
+        vs_col <- "V6"
+    } else {
+        print("[PosCoverageCellCount]: Column format not recognized, attempting to infer structure")
+        if(ncol(QualifiedTotalCts) >= 6) {
+            cell_col <- colnames(QualifiedTotalCts)[1]
+            pos_col <- colnames(QualifiedTotalCts)[2]
+            total_col <- colnames(QualifiedTotalCts)[3]
+            ls_col <- colnames(QualifiedTotalCts)[4]
+            s_col <- colnames(QualifiedTotalCts)[5]
+            vs_col <- colnames(QualifiedTotalCts)[6]
+            print(paste("[PosCoverageCellCount]: Inferred columns:", cell_col, pos_col, total_col, ls_col, s_col, vs_col))
+        } else {
+            stop("[PosCoverageCellCount]: Cannot determine column structure. Expected at least 6 columns.")
+        }
+    }
+    
+    # Convert columns to numeric
+    QualifiedTotalCts[[total_col]] <- as.numeric(as.character(QualifiedTotalCts[[total_col]]))
+    QualifiedTotalCts[[ls_col]] <- as.numeric(as.character(QualifiedTotalCts[[ls_col]]))
+    QualifiedTotalCts[[s_col]] <- as.numeric(as.character(QualifiedTotalCts[[s_col]]))
+    QualifiedTotalCts[[vs_col]] <- as.numeric(as.character(QualifiedTotalCts[[vs_col]]))
+    
+    # Handle cell subsetting
+    if(!is.na(CellSubset[1])){
+        print("Will subset cells...")
+        print(paste(length(unique(QualifiedTotalCts[[cell_col]])),"Cells in QualifiedTotalCts"))
+        print(paste(length(CellSubset),"Cells in the provided subset"))
+        print(paste(length(which(CellSubset %in% unique(QualifiedTotalCts[[cell_col]]))),"Subset cells overlap in QualifiedTotalCts"))
+        QualifiedTotalCts<-subset(QualifiedTotalCts,QualifiedTotalCts[[cell_col]] %in% CellSubset)
+        
+        if(nrow(QualifiedTotalCts) == 0) {
+            stop("[PosCoverageCellCount]: No cells found in the provided subset.")
+        }
+    }else{
+        print("Use all cells")
+        print(paste(length(unique(QualifiedTotalCts[[cell_col]])),"Cells in QualifiedTotalCts"))
+    }
+    
+    # Get total number of unique cells
+    total_cells <- length(unique(QualifiedTotalCts[[cell_col]]))
+    
+    # Count cells with non-zero coverage per position
+    Pos.NonZeroCells <- QualifiedTotalCts %>% 
+        group_by(!!sym(pos_col)) %>% 
+        dplyr::summarise(
+            Total_nonzero = sum(!!sym(total_col) > 0),
+            LS_nonzero = sum(!!sym(ls_col) > 0),
+            S_nonzero = sum(!!sym(s_col) > 0),
+            VS_nonzero = sum(!!sym(vs_col) > 0),
+            Pos_cells = n()
+        ) %>%
+        mutate(Total_cells = total_cells)
+    
+    # Rename position column to standard name
+    colnames(Pos.NonZeroCells)[1] <- "Position"
+    
+    message(paste("[PosCoverageCellCount]: Lookup table created for", total_cells, "cells and", nrow(Pos.NonZeroCells), "positions"))
+    return(Pos.NonZeroCells)
+}
+
 
 #' Function to generate GTS summary
 #'
@@ -465,8 +569,42 @@ InputSummary.qualified<-subset(InputSummary,Cell %in% qualifiedCell)
 VariantFeature<- InputSummary.qualified %>% group_by(Variants) %>% dplyr::summarise(CellN=n(),PositiveMean=mean(hetero),PositiveMean_cts=mean(Freq),maxcts=max(Freq),CV=CV(hetero),TotalVcount=sum(Freq))
 #print(paste(nrow(VariantFeature0),"variants to start"))
 #print(paste(nrow(VariantFeature),"variants after remove low quality cells"))
-VariantFeature$CellNPCT<-VariantFeature$CellN/length(unique(InputSummary.qualified$Cell))
-VariantFeature<-merge(VariantFeature[,c("Variants","CellN","PositiveMean","PositiveMean_cts","maxcts","CellNPCT")],VariantFeature0[,c("Variants","TotalVcount","TotalCov","totalVAF","CV")],by="Variants")
+# Add non-zero coverage cell count from lookup table
+path <- attr(InputSummary,"path")
+thr <- attr(InputSummary,"thr")
+if(is.null(path)){
+    stop("[Vfilter_v4]: ERROR - path attribute is required but not found in InputSummary. Please ensure InputSummary was created with redeemR.read() or redeemR.read.trim().")
+}
+
+# Only count cells that are in the qualified cell set
+pos_coverage <- PosCoverageCellCount(path, CellSubset = qualifiedCell)
+# Determine which column to use based on threshold
+if(thr == "T"){
+    coverage_col <- "Total_nonzero"
+} else if(thr == "LS"){
+    coverage_col <- "LS_nonzero"
+} else if(thr == "S"){
+    coverage_col <- "S_nonzero"
+} else if(thr == "VS"){
+    coverage_col <- "VS_nonzero"
+} else {
+    coverage_col <- "Total_nonzero"  # default
+}
+# Extract position from Variants and merge
+VariantFeature$pos <- as.numeric(sapply(strsplit(as.character(VariantFeature$Variants),"_"), function(x){x[1]}))
+VariantFeature <- merge(VariantFeature, pos_coverage[,c("Position", coverage_col)], 
+                       by.x="pos", by.y="Position", all.x=TRUE)
+colnames(VariantFeature)[colnames(VariantFeature) == coverage_col] <- "Pos_NonZeroCells"
+# Calculate CellNPCT: CellN / Pos_NonZeroCells (% of cells with coverage that have the variant)
+VariantFeature$CellNPCT <- VariantFeature$CellN / VariantFeature$Pos_NonZeroCells
+message("[Vfilter_v4]: Calculating CellNPCT as the percentage of cells with coverage that have the variant.")
+# Remove the temporary pos column
+VariantFeature <- VariantFeature[,!colnames(VariantFeature) %in% "pos"]
+
+# Merge with VariantFeature0 (including Pos_NonZeroCells)
+VariantFeature<-merge(VariantFeature[,c("Variants","CellN","PositiveMean","PositiveMean_cts","maxcts","CellNPCT","Pos_NonZeroCells")],VariantFeature0[,c("Variants","TotalVcount","TotalCov","totalVAF","CV")],by="Variants")
+
+
 HomoVariants<-subset(VariantFeature,CellNPCT>0.75 & PositiveMean>0.75 & CV<0.01)$Variants
 VariantFeature$HomoTag<-ifelse(VariantFeature$Variants %in% HomoVariants,"Homo","Hetero")
 #print(paste("Tag Homoplasmy:",HomoVariants))

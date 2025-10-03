@@ -166,6 +166,23 @@ clean_redeem_remove_blacklist_RSRS50 <-function(ob){
     return(ob)
 }
 
+#' clean_redeem_removehomo
+#'
+#' This function is to clean redeem by filtering both V.fitered and GTsummary.filtered by qvalues
+#' 
+#' @param ob redeem object
+#' @param hotcall fdr cutoff, default is 0.05
+#' @export
+clean_redeem_removehomo <-function(ob){
+  message("Removing homoplasmy variants from V.fitered and GTsummary.filtered")
+    
+    ob@V.fitered <- subset(ob@V.fitered,HomoTag != "Homo")
+    ob@GTsummary.filtered<-subset(ob@GTsummary.filtered, Variants %in% ob@V.fitered$Variants)
+    ob<-Make_matrix(ob,onlyhetero=T)
+    ob@UniqueV <- ob@V.fitered$Variants
+    return(ob)
+}
+
 #' clean_redeem_removehotcall
 #'
 #' This function is to clean redeem by filtering both V.fitered and GTsummary.filtered by qvalues
