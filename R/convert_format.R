@@ -4,7 +4,7 @@
 #' @param mitotracing mitotracing object
 #' @return redeemR class
 #' @export
-convert_mitotracing_redeemR<-function(mitotracing,addAssignedVariant=T, V.fitered=F){
+convert_mitotracing_redeemR<-function(mitotracing,addAssignedVariant=F, V.fitered=F,Ctx.Mtx.depth=F){
 ob<-new("redeemR")
 ob@GTsummary.filtered<-mitotracing@GTsummary.filtered
 ob@CellMeta<-mitotracing@CellMeta
@@ -19,7 +19,11 @@ ob@TREE<-mitotracing@TREE
 ob@DistObjects<-mitotracing@DistObjects
 ob@para<-mitotracing@para
 ob@Seurat<-mitotracing@Seurat
-ob@Ctx.Mtx.depth<-mitotracing@Ctx.Mtx.depth
+
+if (Ctx.Mtx.depth){
+  ob@Ctx.Mtx.depth<-mitotracing@Ctx.Mtx.depth
+}
+
 if (addAssignedVariant){
 ob@AssignedVariant <- mitotracing@AssignedVariant
 }    

@@ -337,7 +337,7 @@ clean_redeem_remove_low_median_depth <- function(ob, min_median_depth = 5) {
 #' # ob <- update_redeemR_from_GTsummary(ob)
 #'
 #' @export
-update_redeemR_from_GTsummary <- function(redeemR_obj, QualifiedTotalCts = NULL) {
+update_redeemR_from_GTsummary <- function(redeemR_obj, QualifiedTotalCts = NULL, update_depth_matrix = TRUE) {
   ob <- redeemR_obj
 
   if (!("GTsummary.filtered" %in% slotNames(ob)) || !is.data.frame(ob@GTsummary.filtered)) {
@@ -391,8 +391,9 @@ update_redeemR_from_GTsummary <- function(redeemR_obj, QualifiedTotalCts = NULL)
   # Rebuild matrices from filtered GTsummary
   # onlyhetero = TRUE ensures only heteroplasmic mutations are used
   ob <- Make_matrix(ob, onlyhetero = TRUE)
-  ob <- Add_DepthMatrix_filter2(ob, QualifiedTotalCts)
-
+  if (update_depth_matrix) {
+    ob <- Add_DepthMatrix_filter2(ob, QualifiedTotalCts)
+  }
   ob
 }
 
@@ -503,6 +504,40 @@ filter_redeemR_by_UMI <- function(redeemR_obj, umi_cutoff = 2, min_cells_per_var
     dplyr::ungroup()
 
   ob <- update_redeemR_from_GTsummary(ob, QualifiedTotalCts)
+  
+  # Print matrix dimensions
+  print_redeemR_matrix_dims(ob, filter_name)
+  
+  ob
+}
+
+#' Filter by cell subset
+#'
+#' @description
+#' Keeps only rows in \code{@GTsummary.filtered} where the cell is in \code{cells_to_keep},
+#' enforces a minimum number of rows per variant, updates \code{@V.fitered}, and rebuilds
+#' matrices and depth matrix.
+#'
+#' @param redeemR_obj A \code{redeemR} object.
+#' @param cells_to_keep Character vector of cell names to retain.
+#' @param min_cells_per_variant Integer; minimum rows per variant (default 2). This is needed because after filterout some cells, some mutation may only show in 1 cell
+#' @param QualifiedTotalCts Optional "QualifiedTotalCts" for depth rebuilding.
+#' @param filter_name Optional label for matrix-dimension printing.
+#'
+#' @return The updated \code{redeemR} object.
+#'
+#' @export
+filter_redeemR_by_cells <- function(redeemR_obj, cells_to_keep, min_cells_per_variant = 2, QualifiedTotalCts = NULL, filter_name = NULL, update_depth_matrix = TRUE) {
+  ob <- redeemR_obj
+  gts <- ob@GTsummary.filtered
+
+  ob@GTsummary.filtered <- gts %>%
+    dplyr::filter(Cell %in% cells_to_keep) %>%
+    dplyr::group_by(Variants) %>%
+    dplyr::filter(dplyr::n() >= min_cells_per_variant) %>%
+    dplyr::ungroup()
+
+  ob <- update_redeemR_from_GTsummary(ob, QualifiedTotalCts, update_depth_matrix = update_depth_matrix)
   
   # Print matrix dimensions
   print_redeemR_matrix_dims(ob, filter_name)

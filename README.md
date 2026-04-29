@@ -34,6 +34,44 @@ library(redeemR)
 - 2024-8-24 We provide an additional filtering option in the ReDeeM-R package. This approach effectively eliminates the position biases, leads to a mutational signature
 indistinguishable from bona fide mitochondrial mutations, and removes excess low molecule high connectedness mutations with high sensitivity. Please see Document Use filter-2 below
 
+## New Functions in redeemR 2.0
+
+### Filtering / Object Manipulation
+| Function | Description |
+|---|---|
+| `Add_DepthMatrix_filter2` | Builds the depth matrix slot (`@Ctx.Mtx.depth`) |
+| `add_annotation_redeem` | Adds variant annotations to a redeemR object |
+| `clean_redeem_remove_blacklist_RSRS50` | Removes RSRS50 blacklisted variants |
+| `clean_redeem_remove_low_median_depth` | Filters variants by minimum median depth |
+| `check_redeem` | Validates a redeemR object |
+| `make_V.fitered_from_mtx` | Reconstructs `@V.fitered` from a matrix |
+| `subset_redeem` | Subsets a redeemR object by a cell whitelist |
+| `filter_redeemR_by_cells` | Filters by cell whitelist with a minimum cells-per-variant threshold |
+| `print_redeemR_matrix_dims` / `safe_dim` / `append_dim_row` | Matrix dimension reporting utilities |
+
+### Variant Annotation
+| Function | Description |
+|---|---|
+| `Annotate_base_change` | Annotates base change type for each variant |
+| `annotate_variants_aachange` | Adds amino acid change annotations |
+| `annotate_variants_blacklist` | Flags blacklisted variant positions |
+| `annotate_variants_homopolymer` | Flags homopolymer-associated variants |
+| `annotate_variants_hypermutable` | Flags hypermutable sites |
+| `annotate_variants_mito_disease` | Annotates known mitochondrial disease associations |
+| `annotate_variants_population_stats` | Adds population-level frequency statistics |
+| `annotate_all_variants` | Runs the full annotation suite in one call |
+
+### Depth & Statistics
+| Function | Description |
+|---|---|
+| `add_median_depth_to_redeemR` | Adds per-variant median depth to the object |
+| `add_prop_2_3_to_redeemR` | Adds UMI proportion statistics |
+
+### Format Conversion
+| Function | Description |
+|---|---|
+| `convert_redeem_matrix_long` | Converts variant and depth matrices to long format |
+
 
 ## Documentation 
 ### Notebooks
