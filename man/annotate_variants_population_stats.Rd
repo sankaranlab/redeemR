@@ -7,20 +7,26 @@
 annotate_variants_population_stats(variant_annotation)
 }
 \arguments{
-\item{variant_annotation}{A data.frame or tibble containing at least columns \code{Variants} and \code{CellN}.}
+\item{variant_annotation}{A data.frame or tibble containing at least columns
+\code{Variants} and \code{CellN}.}
 }
 \value{
-The input \code{variant_annotation}, augmented with:
-\describe{
-\item{\code{Locus}}{Feature name (gene/tRNA/etc).}
-\item{\code{RSRS50}}{Ancestral variant flag (logical).}
-\item{\code{freq_all}}{Overall variant frequency.}
-\item{\code{freq_african}}{Variant frequency in African population.}
-\item{\code{freq_asian}}{Variant frequency in Asian population.}
-\item{\code{freq_eurasian}}{Variant frequency in Eurasian population.}
-\item{\code{n_haplos}}{Count of haplogroups (ancestry branches) marking this variant (>80\\% posterior).}
-}
+The input \code{variant_annotation} with population-frequency, RSRS50, and
+haplogroup marker-count columns added.
 }
 \description{
-
+Adds mitochondrial variant information from \code{mitomap_freq} and haplogroup
+marker counts from \code{haplogroup_markers} to a variant annotation table. Existing
+columns that would collide with the annotation fields are removed before the
+joins are applied.
+}
+\details{
+The added fields include:
+\itemize{
+\item \code{Locus}: gene, tRNA, or other mitochondrial feature.
+\item \code{RSRS50}: ancestral-state flag.
+\item \code{freq_all}, \code{freq_african}, \code{freq_asian}, \code{freq_eurasian}: MITOMAP
+population-frequency summaries.
+\item \code{n_haplos}: number of haplogroup marker entries for the variant.
+}
 }

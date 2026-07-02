@@ -28,5 +28,7 @@ this returns seurat object with both RNA and ATAC
 This function allows you to perform standard sc-multiome clustering
 }
 \examples{
-Multi_Wrapper(path="XX/CellRanger/Donor01_BMMC_1/outs/")
+\dontrun{
+Multi_Wrapper(path = "XX/CellRanger/Donor01_BMMC_1/outs/")
+}
 }

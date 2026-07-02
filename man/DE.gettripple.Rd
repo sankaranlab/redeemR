@@ -20,5 +20,7 @@ This will return .tri.dummy file that is the input for DE analysis
 This function is to prepare the data format that is used to differentially expression calling. It include the raw matrix; data.info and size effect
 }
 \examples{
-ROCKvsnorock.endo.tri.dummy<-DE.gettripple(ROCKvsnorock.endo.paired,cpcol="name")
+\dontrun{
+ROCKvsnorock.endo.tri.dummy <- DE.gettripple(ROCKvsnorock.endo.paired, cpcol = "name")
+}
 }

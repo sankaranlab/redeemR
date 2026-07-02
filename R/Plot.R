@@ -7,11 +7,11 @@
 #' @param h the height of the plot default=3 (optional, for backward compatibility)
 #' @return A list containing both the combined patchwork plot and individual plots
 #' @examples
+#' \dontrun{
 #' depth_plots <- plot_depth(redeemR_obj)
-#' # Use the combined plot:
 #' depth_plots$combined
-#' # Or use individual plots:
 #' depth_plots$position_depth | depth_plots$cell_depth
+#' }
 #' @export
 #' @import ggplot2
 #' @importFrom patchwork plot_annotation
@@ -64,7 +64,9 @@ return(list(
 #' @param h the height of the plot default=3
 #' @return directly out put the plot
 #' @examples
-#' plot_depth(DN1CD34_1.depth$Total,"Total")
+#' \dontrun{
+#' plot_depth_legacy(DN1CD34_1.depth$Total, "Total")
+#' }
 #' @export
 #' @import ggplot2
 plot_depth_legacy<-function(depth=DN1CD34_1.depth,name="",w=10,h=3){
@@ -81,10 +83,10 @@ grid.arrange(p1,p2,layout_matrix=rbind(c(1,1,1,1,1,1,2)),top=name)
 #' Function to plot bulk level mutation signatures
 #'
 #' This function allows you to plot the mito mutation signatures
-#' @param cell_variants a vector of variants formated as c('93_A_G''103_G_A''146_T_C'
-#' @return p from ggplot2
+#' @param cell_variants A character vector of variants formatted as `position_ref_alt`, for example `c("93_A_G", "103_G_A")`.
+#' @return A ggplot object.
 #' @examples
-#' MutationProfile.bulk(DN1CD34_1.Variants.feature.lst[[name]]$Variants
+#' MutationProfile.bulk(c("93_A_G", "103_G_A", "146_T_C"))
 #' @export
 #' @import ggplot2
 MutationProfile.bulk<-function(cell_variants){  ## cell_variants look like c('93_A_G''103_G_A''146_T_C''150_C_T''152_T_C''182_C_T')
@@ -174,7 +176,11 @@ return(list(
 #' @param QualifyCellCut median coverage for qualified cells, default is 10
 #' @return no returns, directly plot
 #' @examples
-#' plot_variant(DN1CD34_1.VariantsGTSummary,DN1CD34_1.Variants.feature.lst,depth=DN1CD34_1.depth,cat=c("Total","VerySensitive","Sensitive","Specific"),p4xlim = 30)
+#' \dontrun{
+#' plot_variant_legacy(DN1CD34_1.VariantsGTSummary, DN1CD34_1.Variants.feature.lst,
+#'   depth = DN1CD34_1.depth, cat = c("Total", "VerySensitive", "Sensitive", "Specific"),
+#'   p4xlim = 30)
+#' }
 #' @export
 #' @import ggplot2 ggExtra
 #' @importFrom gridExtra grid.arrange
@@ -218,7 +224,9 @@ plot_variant_legacy<-function(GTSummary, feature.list, depth, cat = c("Total", "
 #' @param name c
 #' @param CellN nrow(CellVar.Sum)
 #' @examples
-#' CountVperCell(CellVar.Sum$VN,c,CellN=nrow(CellVar.Sum))
+#' \dontrun{
+#' CountVperCell(c(0, 1, 2, 6, 11), "example", CellN = 10)
+#' }
 CountVperCell<-function(x,name,CellN){
 s<-c(CellN-length(x),length(which(x==1)),length(which(x>=2 &x<=5)),length(which(x>=6 &x<=10)),length(which(x>10)))
 names(s)<-c("0","1","2-5","6-10",">10")
@@ -375,12 +383,13 @@ run_redeem_qc <- function(redeem, homosets, hotcall= c("310_T_C","9979_G_A","310
 #'
 #' @param gtree A phylo or tbl_graph object representing the clonal tree.
 #' @param df_var A data.frame with at least columns: cell, variant, a (alt), d (depth),
-#'   or a precomputed vaf column in [0,1].
-#' @param draw_depthbranch_width Numeric scaling for branch width drawing.
+#'   or a precomputed vaf column between 0 and 1.
+#' @param draw_depth Logical; draw branch width by depth when available.
+#' @param branch_width Numeric scaling for branch width drawing.
 #' @param root_edge Logical; whether to include a root edge.
 #' @param dot_size Numeric size for node/tip dots.
 #' @param ylim Optional y limits.
-#' @param clade_annot Optional data.frame of clade annotations (columns: cell, clade[, score]).
+#' @param clade_annot Optional data.frame of clade annotations with columns cell, clade, and optional score.
 #' @param tip_annot Optional data.frame of tip annotations (columns: cell, annot).
 #' @param title Optional plot title.
 #' @param label_site Logical; label mutational sites on the tree.

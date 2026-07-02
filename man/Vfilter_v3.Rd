@@ -33,5 +33,8 @@ this returns feature.list
 This function allows you to filter variants,deprecated, use Vfilter_v4 instead
 }
 \examples{
-DN1CD34_1.Variants.feature.lst<-Vfilter_v3(InputSummary=DN1CD34_1.VariantsGTSummary,depth=DN1CD34_1.depth)
+\dontrun{
+DN1CD34_1.Variants.feature.lst <- Vfilter_v3(InputSummary = DN1CD34_1.VariantsGTSummary,
+  depth = DN1CD34_1.depth)
+}
 }

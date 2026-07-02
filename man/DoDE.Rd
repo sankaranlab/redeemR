@@ -22,5 +22,7 @@ return a list that includes all DE result iteratively
 This is the main function for calculating differentially expressed genes
 }
 \examples{
-ROCKvsnorock.endo.de<-DoDE(ROCKvsnorock.endo.tri.dummy,"name",onlyoneSample=T,cpus=16)
+\dontrun{
+ROCKvsnorock.endo.de <- DoDE(ROCKvsnorock.endo.tri.dummy, "name", onlyoneSample = TRUE, cpus = 16)
+}
 }

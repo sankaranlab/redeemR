@@ -6,8 +6,10 @@
 #' @param res clustering resolution, default=0.5
 #' @return this returns seurat object with RNA clustering
 #' @examples
-#' bmmc.data=Read10X(data.dir = "XX/CellRanger/Donor01_BMMC_1/outs/filtered_feature_bc_matrix")
-#' docluster_GEM(mtx=bmmc.data$`Gene Expression`,exp="DN1_BMMC1")
+#' \dontrun{
+#' bmmc.data <- Read10X(data.dir = "XX/CellRanger/Donor01_BMMC_1/outs/filtered_feature_bc_matrix")
+#' GEM_Wrapper(mtx = bmmc.data$`Gene Expression`, exp = "DN1_BMMC1")
+#' }
 #' @export
 GEM_Wrapper<-function(mtx=bmmc.data$`Gene Expression`,exp="DN1_BMMC1",res=0.5){
 require(Seurat)
@@ -30,7 +32,9 @@ return(ob)
 #' @param res clustering resolution, default=0.5
 #' @return this returns seurat object with ATAC clustering
 #' @examples
-#' bmmc.filtered.atac<-SeuratLSIClustering(PeakVSCell.filtered.Mtx) #each row is a peak, each column is a cell,
+#' \dontrun{
+#' bmmc.filtered.atac <- ATAC_Wrapper(PeakVSCell.filtered.Mtx)
+#' }
 #' @export
 ATAC_Wrapper<-function(MTX,res=0.3,dim1=1, dim2=20){
 require(Signac)
@@ -55,7 +59,9 @@ Cell_Variant.seurat <- FindClusters(Cell_Variant.seurat, resolution = res)
 #' @param cellID to be used for input(useful for re-clustering), default is NULL which will use the info from path/per_barcode_metrics.csv
 #' @return this returns seurat object with both RNA and ATAC
 #' @examples
-#' Multi_Wrapper(path="XX/CellRanger/Donor01_BMMC_1/outs/")
+#' \dontrun{
+#' Multi_Wrapper(path = "XX/CellRanger/Donor01_BMMC_1/outs/")
+#' }
 #' @export
 Multi_Wrapper<-function(path="/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor01_CD34_1_Multiomekit/CellRanger/Donor01_CD34_1/outs",atacmin=1000,umimin=1000,CellID=NULL){
 require(Seurat)

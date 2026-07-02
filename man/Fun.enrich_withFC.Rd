@@ -30,5 +30,7 @@ this will return a simple object with two elements, one is the table to show the
 This function is to do GSEA enrichment analysis
 }
 \examples{
-S7G.GSEA<-Fun.enrich_withFC(markergenesList=list(S7G=topS7G.genes),All.genes=all.genes.refer)
+\dontrun{
+S7G.GSEA <- Fun.enrich_withFC(markergenesList = list(S7G = topS7G.genes), All.genes = all.genes.refer)
+}
 }

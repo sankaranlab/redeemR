@@ -2,18 +2,26 @@
 % Please edit documentation in R/filter2.R
 \name{clean_redeem_remove_low_median_depth}
 \alias{clean_redeem_remove_low_median_depth}
-\title{Remove variants with low median depth from redeemR object}
+\title{Remove variants with low median depth and depth-corrected homoplasmy}
 \usage{
 clean_redeem_remove_low_median_depth(ob, min_median_depth = 5)
 }
 \arguments{
-\item{ob}{A \code{redeemR} object with a \code{median_depth} column in \code{@V.fitered}}
+\item{ob}{A \code{redeemR} object that already has \code{median_depth} and \code{CellNPCT}
+in \code{@V.fitered} (see \code{add_median_depth_to_redeemR}).}
 
-\item{min_median_depth}{Minimum median depth required to retain a variant (default: 10)}
+\item{min_median_depth}{Numeric. Minimum per‑variant median depth to keep (default: 5).}
 }
 \value{
-The input \code{redeemR} object with low-depth variants removed from \code{@V.fitered}, \code{@GTsummary.filtered}, and matrices.
+The updated \code{redeemR} object with variants filtered and matrices rebuilt.
 }
 \description{
-Filters out variants from the redeemR object whose median depth (as stored in \code{@V.fitered$median_depth}) is below a specified threshold.
+Removes variants whose per‑variant median depth (from \code{@V.fitered$median_depth})
+is below a threshold, and also removes depth‑corrected possible homoplasmy
+(\code{CellNPCT > 0.75}). After filtering, rebuilds matrices and the depth matrix.
+}
+\examples{
+# ob <- add_median_depth_to_redeemR(ob)
+# ob <- clean_redeem_remove_low_median_depth(ob, min_median_depth = 10)
+
 }

@@ -6,7 +6,9 @@
 #' @return  return a data frame with merged information
 #' @export
 #' @examples
-#' Tomerge_v2(A,B)
+#' A <- data.frame(x = 1:2, row.names = c("a", "b"))
+#' B <- data.frame(y = 3:4, row.names = c("b", "c"))
+#' Tomerge_v2(A, B, leavex = TRUE, leavey = TRUE)
 
 Tomerge_v2<-function(A,B,leavex=T,leavey=F){
 	mergeAB<-merge(A,B,by="row.names",all.x=leavex,all.y=leavey)
@@ -27,7 +29,9 @@ Tomerge_v2<-function(A,B,leavex=T,leavey=F){
 #' but in case not match, here provides a way to transform into scredeemR order
 #' @return meta a dataframe
 #' @examples
+#' \dontrun{
 #' Translate_RNA2ATAC(meta)
+#' }
 #' @export
 Translate_RNA2ATAC<-function(meta=bmmc.filtered@meta.data,PostFix=T,bclength=16,from=c(1,2,3),to=c(1,2,3)){
 data(ATACWhite)
@@ -55,8 +59,10 @@ return(meta)
 #' @param postfix  a vector of postfix (Usually are numbers that added at the end of cell names). Better be consistent with a merged redeemR object orders
 #' @return new sparse matrix
 #' @examples
-#' Donor4_HSC_HPC_BMMC.Mtx<-MergeMtx(list(Donor04_BMMC_Multiome_wrapper$seurat@assays$RNA@counts,Donor04_HPC_Multiome_wrapper$seurat@assays$RNA@counts,Donor04_HSC_Multiome_wrapper$seurat@assays$RNA@counts),c(3,2,1))
-#' Donor4_HSC_HPC_BMMC.RNA.seurat<-GEM_Wrapper(Donor4_HSC_HPC_BMMC.Mtx)
+#' \dontrun{
+#' Donor4_HSC_HPC_BMMC.Mtx <- MergeMtx(list(mtx1, mtx2, mtx3), c(3, 2, 1))
+#' Donor4_HSC_HPC_BMMC.RNA.seurat <- GEM_Wrapper(Donor4_HSC_HPC_BMMC.Mtx)
+#' }
 #' @export
 MergeMtx<-function(mtx.list,postfix){
 colnames(mtx.list[[1]])<-strsplit(colnames(mtx.list[[1]]),"-") %>% lapply(.,function(x){x[1]}) %>% unlist %>% paste(.,postfix[1],sep="-")
@@ -171,7 +177,9 @@ return(ob)
 #' @return  This will return .tri.dummy file that is the input for DE analysis
 #' @export
 #' @examples
-#' ROCKvsnorock.endo.tri.dummy<-DE.gettripple(ROCKvsnorock.endo.paired,cpcol="name")
+#' \dontrun{
+#' ROCKvsnorock.endo.tri.dummy <- DE.gettripple(ROCKvsnorock.endo.paired, cpcol = "name")
+#' }
 DE.gettripple<-function(datapair,cpcol,withscran=F)
 {
 #	library(scran)
@@ -247,7 +255,9 @@ DE.gettripple<-function(datapair,cpcol,withscran=F)
 #' @return  return a list that includes all DE result iteratively
 #' @export
 #' @examples
-#' ROCKvsnorock.endo.de<-DoDE(ROCKvsnorock.endo.tri.dummy,"name",onlyoneSample=T,cpus=16)
+#' \dontrun{
+#' ROCKvsnorock.endo.de <- DoDE(ROCKvsnorock.endo.tri.dummy, "name", onlyoneSample = TRUE, cpus = 16)
+#' }
 
 DoDE<-function(tri.dummy,cpcol,onlyoneSample=F,cpus=16)
 {
@@ -417,7 +427,9 @@ return(fulllist)
 #' @return this will return a simple object with two elements, one is the table to show the significant terms , the other one shows the gene names involved significant terms
 #' @export
 #' @examples
-#' S7G.GSEA<-Fun.enrich_withFC(markergenesList=list(S7G=topS7G.genes),All.genes=all.genes.refer)
+#' \dontrun{
+#' S7G.GSEA <- Fun.enrich_withFC(markergenesList = list(S7G = topS7G.genes), All.genes = all.genes.refer)
+#' }
 Fun.enrich_withFC<-function(markergenesList,All.genes=all.genes.refer
 ,db=msig.db,qcutoff=0.05,top=NULL)
 {
@@ -505,8 +517,6 @@ Fun.enrich_withFC<-function(markergenesList,All.genes=all.genes.refer
 #' @param top=NULL  pass a number to only show top # terms
 #' @return this will return a simple object with two elements, one is the table to show the significant terms , the other one shows the gene names involved significant terms
 #' @export
-#' @examples
-#'
 Fun.enrich_withFC.pvalue<-function(markergenesList,All.genes=all.genes.refer,db=msig.db,qcutoff=0.05,top=NULL)
 {
 	require(qvalue)
@@ -593,7 +603,6 @@ Fun.enrich_withFC.pvalue<-function(markergenesList,All.genes=all.genes.refer,db=
 #' @param thedatabase=db
 #' @return
 #' @export
-#' @examples
 binomialtest.msig.enrch_deplet<-function(mylist,All=All.genes,name,thedatabase=db)
 {
 n<-length(mylist)
@@ -615,7 +624,6 @@ return(statistics)
 #' @param df2
 #' @return ""
 #' @export
-#' @examples
 Tomerge.col<-function(df1,df2)
 {
 	if(length(df1)==0)
@@ -655,7 +663,6 @@ Tomerge.col<-function(df1,df2)
 #' @param upsidedown default is F
 #' @return p
 #' @export
-#' @examples
 gsea_enrichmentheat<-function(df,df.sourse=H1_S7.Betatraj_all.huge.clusters.GSEA,title,labelsize=8,insidesize=3,thedatabase=msig.db,headless=T,upsidedown=F)
 {
 	row.names(df)<-df[,1]
@@ -813,7 +820,9 @@ CountOverlap_Adj<-function(M,n=0){
 #' @return Prints matrix dimensions to console
 #'
 #' @examples
+#' \dontrun{
 #' print_redeemR_matrix_dims(redeemR_object)
+#' }
 #'
 #' @export
 print_redeemR_matrix_dims <- function(ob, sample_name = NULL) {

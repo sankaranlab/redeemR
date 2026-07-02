@@ -26,5 +26,7 @@ Sequentially applies all annotation functions to a
 variant annotation data frame.
 }
 \examples{
+\dontrun{
 df_annot <- annotate_all_variants(my_variant_df)
+}
 }

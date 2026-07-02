@@ -41,6 +41,10 @@ This function allows you to input the metadata with row name as cell barcode
 This function allows you to input the metadata with row name as cell barcode
 }
 \examples{
+\dontrun{
 Translate_RNA2ATAC(meta)
+}
+\dontrun{
 Translate_RNA2ATAC(meta)
+}
 }

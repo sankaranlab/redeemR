@@ -1,0 +1,198 @@
+---
+title: "Filter2 QC report"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Filter2 QC report}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+## Overview
+
+The filter2 QC report is the recommended quality-control summary for a
+preprocessed `redeemR2.0` filter2 object. It is generated after filter2
+preprocessing and is intentionally separate from the preprocessing step. This
+keeps the analysis object stable and lets QC reports be re-rendered without
+rerunning variant filtering.
+
+The report is built from a filter2 RDS object produced by the default
+`redeemR2.0` preprocessing workflow. It summarizes the input object, upstream
+REDEEM-V QC, filtering state, depth behavior, mutation spectrum, variant support,
+consensus-call diagnostics, and filter2-specific artifact checks.
+
+## Expected input
+
+The report expects a filter2 object with the default project-local layout:
+
+```text
+preprocessing/filter2/<sample>/<sample>.<thr>.redeemR_filter2_adddepth.rds
+```
+
+The object should contain:
+
+- filtered genotype summaries in `@GTsummary.filtered`
+- filtered variant annotations in `@V.fitered`
+- count and binary matrices in `@Cts.Mtx` and `@Cts.Mtx.bi`
+- a matched depth matrix in `@Ctx.Mtx.depth`
+- the original REDEEM-V final directory in `@attr$path`
+- homoplasmic or near-homoplasmic calls in `@HomoVariants`
+
+The renderer also tries to include the upstream REDEEM-V QC image from the sample
+directory when it is available.
+
+## Render the report
+
+The package-level renderer is:
+
+```text
+inst/scripts/render_filter2_qc.R
+```
+
+A direct render command is:
+
+```bash
+Rscript inst/scripts/render_filter2_qc.R \
+  --input-rds preprocessing/filter2/sample1/sample1.S.redeemR_filter2_adddepth.rds \
+  --output-html reports/filter2_qc/sample1/sample1.S.filter2_qc.html \
+  --sample-name sample1 \
+  --thr S \
+  --output-metrics-tsv preprocessing/filter2/sample1/sample1.S.filter2_qc_metrics.tsv \
+  --output-report-rds preprocessing/filter2/sample1/sample1.S.filter2_qc_report.rds
+```
+
+In the shared workflow, the QC-only wrapper is:
+
+```bash
+/lab/solexa_weissman/cweng/workflows/filter2/scripts/run_filter2_qc.sh \
+  <project_dir> <sample> <thr>
+```
+
+For example:
+
+```bash
+/lab/solexa_weissman/cweng/workflows/filter2/scripts/run_filter2_qc.sh \
+  /path/to/project sample1 S
+```
+
+This wrapper uses the project-local input object and writes the report outputs to
+the standard locations.
+
+## Output files
+
+For each sample, the expected outputs are:
+
+```text
+reports/filter2_qc/<sample>/<sample>.<thr>.filter2_qc.html
+preprocessing/filter2/<sample>/<sample>.<thr>.filter2_qc_metrics.tsv
+preprocessing/filter2/<sample>/<sample>.<thr>.filter2_qc_report.rds
+```
+
+The HTML file is the report for interactive review. The TSV contains one compact
+row of report-level metrics suitable for comparing many samples. The RDS stores
+structured report components for downstream inspection or aggregation.
+
+## Report sections
+
+### Metadata
+
+The report records the sample name, consensus threshold, input RDS path, resolved
+REDEEM-V final directory, and report-generation time.
+
+### Upstream REDEEM-V QC
+
+If available, the report includes the upstream REDEEM-V QC PNG. This provides a
+quick check of the consensus-calling stage before reviewing filter2-specific
+outputs.
+
+### Filtering summary
+
+The report shows the filter2 processing steps and object-level counts, including:
+
+- `VariantsGTSummary` rows, unique cells, and unique variants
+- `GTsummary.filtered` rows, unique cells, and unique variants
+- `V.fitered` rows
+- heteroplasmic variant count
+- homoplasmic variant count
+- QC variant count after homoplasmic and hotcall exclusion
+- QC cell-variant rows after homoplasmic and hotcall exclusion
+
+### Object summary and table previews
+
+The report prints the `redeemR` object summary and shows previews of the initial
+variant genotype summary and the filtered genotype summary.
+
+### Depth QC
+
+The depth section uses `plot_depth()` to summarize mtDNA coverage behavior across
+positions and cells. This is used to identify unusual coverage profiles that may
+affect variant detection or downstream lineage analysis.
+
+### Mutation profile
+
+The mutation-profile section uses `MutationProfile.bulk()` on the filtered
+variant set. This summarizes mutation spectrum composition and is useful for
+checking whether the final calls have a plausible mtDNA mutational signature.
+
+### Variant QC
+
+The variant QC section includes:
+
+- top variants ranked by percent of cells carrying the variant
+- UMI support bins for retained cell-variant observations: `1 UMI`, `2 UMI`, and
+  `>=3 UMI`
+- the four `plot_variant()` panels, covering variant frequency, heteroplasmy,
+  support, and per-cell variant burden summaries
+
+### Consensus QC
+
+The consensus QC section runs `Show_Consensus()` on the filter2 object. It is
+used to review UMI family-size distributions, consensus-score behavior, R1/R2
+support, strand balance, and representative consensus-call examples.
+
+### Filter2 QC
+
+The filter2-specific section runs:
+
+```r
+obj <- add_raw_fragment(obj, raw = "RawGenotypes.Sensitive.StrandBalance")
+qc <- run_redeem_qc(obj, obj@HomoVariants)
+```
+
+It reports whether raw-fragment annotation and filter2 QC completed
+successfully. If successful, it shows transition/transversion rates and graph-like
+variant connectivity metrics, including:
+
+- total mutation count
+- total cell count
+- median mutations per cell
+- median number of connected cells
+- fraction in the connected component
+
+It also shows four filter2 diagnostic plots:
+
+- fragment-relative position histogram for retained non-homoplasmic/non-hotcall
+  variants
+- fragment-relative position histogram for 1-molecule variants
+- `CellN` versus `maxcts`, colored by transition/transversion class
+- `CellN` versus `PositiveMean_cts`, colored by transition/transversion class
+
+## How to interpret the report
+
+A typical high-quality filter2 result should show no strong enrichment of retained
+variants at fragment ends, a plausible mutation spectrum, limited excess
+transversion burden among low-UMI calls, and no small set of variants dominating
+an unexpectedly large fraction of cells unless those variants are expected from
+the biology or sample design.
+
+The report is diagnostic rather than a substitute for project-specific review.
+Samples with unusual depth distributions, high fragment-end enrichment,
+substantial transversion excess, or highly connected low-support variants should
+be reviewed before lineage reconstruction.

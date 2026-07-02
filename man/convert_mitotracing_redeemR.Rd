@@ -4,7 +4,12 @@
 \alias{convert_mitotracing_redeemR}
 \title{convert_mitotracing_redeemR}
 \usage{
-convert_mitotracing_redeemR(mitotracing, addAssignedVariant = T, V.fitered = F)
+convert_mitotracing_redeemR(
+  mitotracing,
+  addAssignedVariant = F,
+  V.fitered = F,
+  Ctx.Mtx.depth = F
+)
 }
 \arguments{
 \item{mitotracing}{mitotracing object}

@@ -18,6 +18,8 @@ new sparse matrix
 This function allows you to input a list of sparse matrix and merge by rownames, return a new sparse matrix
 }
 \examples{
-Donor4_HSC_HPC_BMMC.Mtx<-MergeMtx(list(Donor04_BMMC_Multiome_wrapper$seurat@assays$RNA@counts,Donor04_HPC_Multiome_wrapper$seurat@assays$RNA@counts,Donor04_HSC_Multiome_wrapper$seurat@assays$RNA@counts),c(3,2,1))
-Donor4_HSC_HPC_BMMC.RNA.seurat<-GEM_Wrapper(Donor4_HSC_HPC_BMMC.Mtx)
+\dontrun{
+Donor4_HSC_HPC_BMMC.Mtx <- MergeMtx(list(mtx1, mtx2, mtx3), c(3, 2, 1))
+Donor4_HSC_HPC_BMMC.RNA.seurat <- GEM_Wrapper(Donor4_HSC_HPC_BMMC.Mtx)
+}
 }

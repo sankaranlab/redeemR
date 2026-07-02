@@ -1,0 +1,309 @@
+---
+title: "redeemR2.0 workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{redeemR2.0 workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+## Overview
+
+`redeemR2.0` is the downstream analysis framework for processing REDEEM-V
+mitochondrial consensus variant calls before lineage reconstruction. It imports
+consensus-filtered calls from a REDEEM-V `final/` directory, applies the default
+filter2 post-consensus filtering workflow, annotates variants, builds matched
+cell-by-variant matrices, and produces a lineage-ready `redeemR` object.
+
+The core workflow has five tasks:
+
+1. Parse consensus-filtered mutation calls from REDEEM-V.
+2. Apply post-consensus variant filtering and quality control.
+3. Remove residual fragment-end artifacts with edge trimming.
+4. Remove residual technical artifacts with binomial noise filtering.
+5. Flag inherited or pre-existing variants and annotate functional impact.
+
+In `redeemR2.0`, **filter2** refers to the default post-consensus filtering
+workflow. It is applied after UMI-based consensus variant calling and is designed
+to retain high-fidelity somatic mtDNA variants while removing residual technical
+artifacts, inherited or pre-existing polymorphisms, and variants less suitable
+for neutral lineage tracing.
+
+## Inputs
+
+The workflow starts from a REDEEM-V `final/` output directory. Unless otherwise
+specified, use the stringent consensus output (`thr = "S"`).
+
+The directory should contain:
+
+```text
+QualifiedTotalCts
+RawGenotypes.Sensitive.StrandBalance
+RawGenotypes.Specific.StrandBalance
+RawGenotypes.Total.StrandBalance
+RawGenotypes.VerySensitive.StrandBalance
+```
+
+The file roles are:
+
+| File | Role |
+|---|---|
+| `RawGenotypes.*.StrandBalance` | Consensus-filtered mutation calls at a selected stringency |
+| `QualifiedTotalCts` | Per-cell, per-position mtDNA depth used to build the matched depth matrix |
+
+The supported thresholds are:
+
+| Threshold | REDEEM-V file | Meaning |
+|---|---|---|
+| `T` | `RawGenotypes.Total.StrandBalance` | Total calls before consensus stringency filtering |
+| `LS` | `RawGenotypes.VerySensitive.StrandBalance` | Less stringent consensus calls |
+| `S` | `RawGenotypes.Sensitive.StrandBalance` | Stringent consensus calls; default |
+| `VS` | `RawGenotypes.Specific.StrandBalance` | Very stringent consensus calls |
+
+## Command-line quick start
+
+For routine preprocessing, use the package script:
+
+```bash
+Rscript scripts/redeemR2.0_preprocess.R \
+  --name sample1 \
+  --input /path/to/redeemV/final \
+  --output preprocessing/filter2/sample1/sample1.S.redeemR_filter2_adddepth.rds \
+  --thr S \
+  --edge-trim 9 \
+  --min-variant-depth 5 \
+  --do-median-depth-filter
+```
+
+This writes a cleaned `redeemR` object. The default project-local layout is:
+
+```text
+preprocessing/filter2/<sample>/<sample>.<thr>.redeemR_filter2_adddepth.rds
+```
+
+Run the separate QC report after preprocessing:
+
+```bash
+Rscript inst/scripts/render_filter2_qc.R \
+  --input-rds preprocessing/filter2/sample1/sample1.S.redeemR_filter2_adddepth.rds \
+  --output-html reports/filter2_qc/sample1/sample1.S.filter2_qc.html \
+  --sample-name sample1 \
+  --thr S \
+  --output-metrics-tsv preprocessing/filter2/sample1/sample1.S.filter2_qc_metrics.tsv \
+  --output-report-rds preprocessing/filter2/sample1/sample1.S.filter2_qc_report.rds
+```
+
+See `vignettes/filter2-qc.Rmd` for a detailed description of the QC report.
+
+## R workflow
+
+Load the package and point to the REDEEM-V `final/` directory:
+
+```{r setup}
+library(redeemR)
+
+redeemv_final <- "/path/to/redeemV/final"
+sample_name <- "sample1"
+thr <- "S"
+edge_trim <- 9
+```
+
+### Parse and edge-trim REDEEM-V calls
+
+`redeemR.read.trim()` reads the selected consensus genotype file, annotates raw
+calls by distance to the nearest fragment end, removes calls within the trimmed
+edge window, and reconstructs genotype summaries after trimming.
+
+```{r parse-trim}
+variants <- redeemR.read.trim(
+  path = redeemv_final,
+  thr = thr,
+  edge_trim = edge_trim
+)
+```
+
+The returned genotype summary stores per-cell variant UMI counts, site depth, and
+heteroplasmy for retained cell-variant observations. It also carries attributes
+used downstream, including the selected threshold, depth summaries, input path,
+and edge-trim setting.
+
+### Create the initial redeemR object
+
+`Create_redeemR_model()` initializes the `redeemR` object, keeps cells with mean
+mitochondrial coverage above the coverage threshold, identifies candidate
+variants, constructs count and binary matrices, and runs the per-variant binomial
+noise model.
+
+```{r create-object}
+obj <- Create_redeemR_model(
+  variants,
+  qualifiedCellCut = 10,
+  VAFcut = 1,
+  Cellcut = 2
+)
+```
+
+At this point, the object contains initial genotype summaries, candidate variant
+summaries, cell metadata, depth summaries, homoplasmic or near-homoplasmic
+variant labels, and preliminary cell-by-variant matrices.
+
+### Apply binomial post-consensus filtering
+
+The binomial model compares each variant's UMI-count distribution across cells
+with a single-binomial technical-noise model parameterized by the observed total
+variant counts and position-specific mean coverage. P-values are converted to
+q-values, and filter2 keeps heteroplasmic variants passing the FDR threshold and
+minimum cell-count filter.
+
+```{r clean-binomial}
+obj <- clean_redeem(
+  obj,
+  fdr = 0.05,
+  min_cell_per_variant = 2
+)
+```
+
+### Annotate variants
+
+Add population, sequence-context, and functional annotations to the filtered
+variant table:
+
+```{r annotate}
+obj <- add_annotation_redeem(obj)
+```
+
+These annotations include population features, RSRS50 status, haplogroup marker
+information, blacklist regions, homopolymer context, hypermutable-site labels,
+amino-acid consequences, mitochondrial disease annotations, and
+transition/transversion class when the corresponding annotation functions are
+available.
+
+### Remove RSRS50 and blacklist variants
+
+For downstream lineage analysis, filter2 removes heteroplasmic RSRS50 variants
+and variants falling in predefined mitochondrial blacklist regions.
+
+```{r remove-rsrs50-blacklist}
+obj <- clean_redeem_remove_blacklist_RSRS50(obj)
+```
+
+### Add the matched depth matrix
+
+Build the cell-by-variant depth matrix from `QualifiedTotalCts` and match it to
+the filtered count matrix.
+
+```{r add-depth}
+obj <- Add_DepthMatrix_filter2(obj)
+```
+
+The resulting matrix is stored in `obj@Ctx.Mtx.depth` and should have the same
+cell and variant dimensions as the filtered count matrix.
+
+### Add depth and UMI-support metrics
+
+Add per-variant median depth and the number of cells with nonzero coverage:
+
+```{r add-depth-metrics}
+obj <- add_median_depth_to_redeemR(obj)
+```
+
+If desired, remove variants with low median depth. The default filter2 cutoff is
+5 when this step is enabled.
+
+```{r median-depth-filter}
+obj <- clean_redeem_remove_low_median_depth(
+  obj,
+  min_median_depth = 5
+)
+```
+
+Finally, add UMI-support features used during QC, including the fraction of
+variant detections supported by two or three UMIs.
+
+```{r umi-support}
+obj <- add_prop_2_3_to_redeemR(obj)
+```
+
+### Save the filter2 object
+
+```{r save-object}
+out_rds <- file.path(
+  "preprocessing/filter2",
+  sample_name,
+  paste0(sample_name, ".", thr, ".redeemR_filter2_adddepth.rds")
+)
+
+dir.create(dirname(out_rds), recursive = TRUE, showWarnings = FALSE)
+saveRDS(obj, out_rds)
+```
+
+## Inspect the output object
+
+The final object contains the filtered genotype records, variant annotations,
+count matrices, binary matrices, depth matrix, and QC-ready metadata.
+
+```{r inspect}
+show(obj)
+print_redeemR_matrix_dims(obj)
+head(obj@V.fitered)
+head(obj@GTsummary.filtered)
+```
+
+Important slots are:
+
+| Slot | Description |
+|---|---|
+| `@V.fitered` | Filtered variant-level summary and annotations |
+| `@GTsummary.filtered` | Filtered cell-variant genotype records |
+| `@Cts.Mtx` | Cell-by-variant mutant allele count matrix |
+| `@Cts.Mtx.bi` | Binarized cell-by-variant mutation matrix |
+| `@Ctx.Mtx.depth` | Matched cell-by-variant depth matrix |
+| `@HomoVariants` | Homoplasmic or near-homoplasmic variants identified during preprocessing |
+
+## Basic QC plots
+
+The following functions provide quick checks before formal QC report rendering:
+
+```{r basic-qc}
+plot_depth(obj)$combined
+MutationProfile.bulk(obj@UniqueV)
+variant_plots <- plot_variant(obj)
+variant_plots$p1
+variant_plots$p2
+variant_plots$p3
+variant_plots$p4
+```
+
+For the full report, render the filter2 QC report described in
+`vignettes/filter2-qc.Rmd`.
+
+## Default parameters
+
+| Step | Default |
+|---|---|
+| Consensus input | Stringent consensus output, `thr = "S"` |
+| Edge trimming | 9 bp from fragment ends |
+| Cell coverage filter | Mean mtDNA coverage >= 10 |
+| Initial variant cell filter | Detected in >= 2 cells |
+| Supporting UMI threshold | At least 1 supporting UMI in an individual cell |
+| Homoplasmic or near-homoplasmic annotation | `CellNPCT > 0.75`, `PositiveMean > 0.75`, `CV < 0.01` |
+| Binomial filter | Per-variant goodness-of-fit test |
+| FDR threshold | `q <= 0.05` |
+| Optional median-depth filter | Remove variants with median depth < 5 |
+| Downstream lineage exclusions | RSRS50 variants and mitochondrial blacklist regions |
+
+## Downstream analysis
+
+The filter2 object is designed to support downstream lineage reconstruction,
+clonal analysis, and integration with single-cell multiome data. Typical next
+steps include distance calculation, graph construction, tree reconstruction, and
+clone or clade-level analysis using the filtered mutation matrices and matched
+depth matrix.

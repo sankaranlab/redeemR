@@ -27,6 +27,8 @@ This function:
 }
 }
 \examples{
+\dontrun{
 redeemR <- add_median_depth_to_redeemR(redeemR)
+}
 
 }

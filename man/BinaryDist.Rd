@@ -18,5 +18,6 @@ dist object
 Compute distances for binary distances
 }
 \examples{
-d.Jaccard<-BinaryDist(object@Cts.Mtx.bi,method="Jaccard")
+m <- Matrix::Matrix(c(1, 0, 1, 1, 0, 1), nrow = 3, sparse = TRUE)
+d.Jaccard <- BinaryDist(m, method = "Jaccard")
 }

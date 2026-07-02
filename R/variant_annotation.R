@@ -53,29 +53,24 @@ Annotate_base_change <- function(variant_annotation){
 
 #' Annotate variant table with population frequency and haplogroup statistics
 #'
-#' @description
-#' Adds mitochondrial variant information from \code{mitomap_freq} and 
-#' haplogroup marker counts from \code{haplogroup_markers} to a variant annotation
-#' data frame.  data. It drops any existing columns that would collide, then merges in:
-#' \itemize{
-#'   \item{\code{Locus}}{Gene name, tRNA, or other feature from \code{mitomap_freq}.}
-#'   \item{\code{RSRS50}}{Logical flag indicating whether the variant is an ancestral (RSRS50) variant.}
-#'   \item{\code{freq_all, freq_african, freq_asian, freq_eurasian}}{Mitochondrial variant frequencies in the overall, African, Asian, and Eurasian populations, respectively.}
-#'   \item{\code{n_haplos}}{Number of population‐level ancestry branches (haplogroups) that consider this variant a marker (posterior >80\%).}
-#' }
+#' Adds mitochondrial variant information from `mitomap_freq` and haplogroup
+#' marker counts from `haplogroup_markers` to a variant annotation table. Existing
+#' columns that would collide with the annotation fields are removed before the
+#' joins are applied.
 #'
-#' @param variant_annotation A data.frame or tibble containing at least columns \code{Variants} and \code{CellN}.
+#' The added fields include:
 #'
-#' @return The input \code{variant_annotation}, augmented with:
-#' \describe{
-#'   \item{\code{Locus}}{Feature name (gene/tRNA/etc).}
-#'   \item{\code{RSRS50}}{Ancestral variant flag (logical).}
-#'   \item{\code{freq_all}}{Overall variant frequency.}
-#'   \item{\code{freq_african}}{Variant frequency in African population.}
-#'   \item{\code{freq_asian}}{Variant frequency in Asian population.}
-#'   \item{\code{freq_eurasian}}{Variant frequency in Eurasian population.}
-#'   \item{\code{n_haplos}}{Count of haplogroups (ancestry branches) marking this variant (>80\% posterior).}
-#' }
+#' - `Locus`: gene, tRNA, or other mitochondrial feature.
+#' - `RSRS50`: ancestral-state flag.
+#' - `freq_all`, `freq_african`, `freq_asian`, `freq_eurasian`: MITOMAP
+#'   population-frequency summaries.
+#' - `n_haplos`: number of haplogroup marker entries for the variant.
+#'
+#' @param variant_annotation A data.frame or tibble containing at least columns
+#'   `Variants` and `CellN`.
+#'
+#' @return The input `variant_annotation` with population-frequency, RSRS50, and
+#'   haplogroup marker-count columns added.
 #'
 #' @importFrom dplyr select any_of left_join arrange desc group_by summarize
 #' @export
@@ -316,7 +311,9 @@ annotate_variants_hypermutable <- function(variant_annotation){
 #' }
 #'
 #' @examples
+#' \dontrun{
 #' df_annot <- annotate_all_variants(my_variant_df)
+#' }
 #' @importFrom dplyr %>%
 #' @export
 annotate_all_variants <- function(variant_annotation) {
@@ -349,7 +346,9 @@ annotate_all_variants <- function(variant_annotation) {
 #' @return The input redeemR object with median_depth column added to @V.fitered
 #'
 #' @examples
+#' \dontrun{
 #' redeemR <- add_median_depth_to_redeemR(redeemR)
+#' }
 #'
 #' @export
 #' @importFrom dplyr left_join
@@ -402,7 +401,9 @@ add_median_depth_to_redeemR <- function(redeemR) {
 #'   joined into \code{@V.fitered} by \code{Variants}.
 #'
 #' @examples
+#' \dontrun{
 #' redeemR <- add_prop_2_3_to_redeemR(redeemR)
+#' }
 #'
 #' @export
 #' @importFrom dplyr group_by summarise n_distinct left_join select

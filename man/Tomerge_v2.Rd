@@ -18,5 +18,7 @@ return a data frame with merged information
 This function is to quickly merge two dataframe by rownames, but can choose to leave A or B all information
 }
 \examples{
-Tomerge_v2(A,B)
+A <- data.frame(x = 1:2, row.names = c("a", "b"))
+B <- data.frame(y = 3:4, row.names = c("b", "c"))
+Tomerge_v2(A, B, leavex = TRUE, leavey = TRUE)
 }

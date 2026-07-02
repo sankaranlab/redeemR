@@ -16,5 +16,7 @@ Prints confirmation messages for each consistency check.
 Verifies that the counts matrix and binary counts matrix in a redeem object have matching dimensions and identical row and column names.
 }
 \examples{
+\dontrun{
 check_redeem(my_redeem)
+}
 }

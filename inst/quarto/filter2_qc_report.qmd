@@ -1,0 +1,500 @@
+---
+title: "redeemR Filter2 QC Report"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+execute:
+  echo: false
+  warning: false
+  message: false
+params:
+  input_rds: null
+  sample_name: null
+  thr: null
+  raw_name: "RawGenotypes.Sensitive.StrandBalance"
+  top_n_variants: 20
+  consensus_n: 25
+  output_metrics_tsv: null
+  output_report_rds: null
+---
+
+```{r}
+stopifnot(!is.null(params$input_rds), file.exists(params$input_rds))
+
+suppressWarnings(suppressPackageStartupMessages({
+  library(redeemR)
+  library(dplyr)
+  library(ggplot2)
+  library(knitr)
+  library(stringr)
+  library(Matrix.utils)
+}))
+
+hotcall_variants <- c("310_T_C", "9979_G_A", "3109_T_C")
+
+sample_name <- params$sample_name
+if (is.null(sample_name) || !nzchar(sample_name)) {
+  sample_name <- sub("\\..*$", "", basename(params$input_rds))
+}
+
+redeem_obj <- readRDS(params$input_rds)
+
+thr <- params$thr
+if (is.null(thr) || !nzchar(thr)) {
+  thr <- unname(redeem_obj@para["Threhold"])
+}
+
+final_dir <- redeem_obj@attr$path
+input_rds_abs <- normalizePath(params$input_rds, mustWork = TRUE)
+path_parts <- strsplit(input_rds_abs, "/")[[1]]
+filter2_idx <- which(path_parts == "filter2")
+if (length(filter2_idx) == 1L && filter2_idx > 2L && path_parts[filter2_idx - 1L] == "preprocessing") {
+  project_root <- paste(path_parts[seq_len(filter2_idx - 2L)], collapse = "/")
+  if (!nzchar(project_root)) {
+    project_root <- "/"
+  }
+  project_root <- normalizePath(project_root, mustWork = TRUE)
+} else {
+  project_root <- normalizePath(dirname(dirname(dirname(dirname(input_rds_abs)))), mustWork = TRUE)
+}
+if (grepl("^/", final_dir)) {
+  final_dir_abs <- final_dir
+} else {
+  final_dir_abs <- file.path(project_root, final_dir)
+  if (!file.exists(final_dir_abs)) {
+    final_dir_alt <- sub("^Analysis_redeemV/", "preprocessing/redeemV/", final_dir)
+    final_dir_abs <- file.path(project_root, final_dir_alt)
+  }
+}
+redeem_obj@attr$path <- final_dir_abs
+sample_dir <- dirname(dirname(final_dir_abs))
+redeemv_qc_png <- file.path(sample_dir, paste0(sample_name, ".QCplot.png"))
+redeemv_qc_png_local <- file.path(getwd(), paste0(sample_name, ".redeemV_qc.png"))
+if (file.exists(redeemv_qc_png)) {
+  tmp_copy_ok <- file.copy(redeemv_qc_png, redeemv_qc_png_local, overwrite = TRUE)
+  invisible(tmp_copy_ok)
+}
+
+capture_show <- function(x) {
+  paste(capture.output(show(x)), collapse = "\n")
+}
+
+safe_head <- function(df, n = 10) {
+  if (is.null(df) || !NROW(df)) {
+    return(data.frame())
+  }
+  utils::head(as.data.frame(df), n)
+}
+
+safe_plot <- function(expr) {
+  withCallingHandlers(
+    tryCatch(expr, error = function(e) e),
+    message = function(m) {
+      invokeRestart("muffleMessage")
+    },
+    warning = function(w) {
+      invokeRestart("muffleWarning")
+    }
+  )
+}
+
+quiet_eval <- function(expr) {
+  withCallingHandlers(
+    expr,
+    message = function(m) {
+      invokeRestart("muffleMessage")
+    },
+    warning = function(w) {
+      invokeRestart("muffleWarning")
+    }
+  )
+}
+
+calc_unique_count <- function(x) {
+  if (is.null(x) || !length(x)) {
+    return(0L)
+  }
+  length(unique(x))
+}
+
+describe_filter_steps <- function(ob) {
+  data.frame(
+    Step = c(
+      "1. redeemR.read.trim",
+      "2. Create_redeemR_model",
+      "3. clean_redeem",
+      "4. add_annotation_redeem",
+      "5. clean_redeem_remove_blacklist_RSRS50",
+      "6. Add_DepthMatrix_filter2"
+    ),
+    Detail = c(
+      sprintf(
+        "thr=%s, edge_trim=%s, source=%s",
+        unname(ob@para["Threhold"]),
+        unname(ob@para["edge_trim"]),
+        ob@attr$path
+      ),
+      sprintf(
+        "qualifiedCellCut=%s, VAFcut=%s, Cellcut=%s",
+        unname(ob@para["qualifiedCellCut"]),
+        unname(ob@para["VAFcut"]),
+        unname(ob@para["Cellcut"])
+      ),
+      "Binomial cleanup with fdr=0.05 and min_cell_per_variant=2",
+      "Add population genetics and functional impact annotations",
+      "Remove blacklist and RSRS50-associated calls from the active filtered state",
+      "Attach filter2 depth matrix"
+    ),
+    stringsAsFactors = FALSE
+  )
+}
+
+build_filtering_summary <- function(ob) {
+  v_all <- as.data.frame(ob@V.fitered)
+  gt_all <- as.data.frame(ob@GTsummary.filtered)
+  variants_gtsummary <- as.data.frame(attr(ob, "GTsummary.ini"))
+  homo_variants <- unique(ob@HomoVariants)
+  qc_gt <- subset(gt_all, !Variants %in% c(homo_variants, hotcall_variants))
+  qc_v <- subset(v_all, !Variants %in% hotcall_variants)
+
+  data.frame(
+    Metric = c(
+      "VariantsGTSummary rows",
+      "VariantsGTSummary unique cells",
+      "VariantsGTSummary unique variants",
+      "GTsummary.filtered rows",
+      "GTsummary.filtered unique cells",
+      "GTsummary.filtered unique variants",
+      "V.fitered rows",
+      "V.fitered heteroplasmic rows",
+      "HomoVariants count",
+      "QC variants after homo+hotcall exclusion",
+      "QC cell-variant rows after homo+hotcall exclusion"
+    ),
+    Value = c(
+      nrow(variants_gtsummary),
+      calc_unique_count(variants_gtsummary$Cell),
+      calc_unique_count(variants_gtsummary$Variants),
+      nrow(gt_all),
+      calc_unique_count(gt_all$Cell),
+      calc_unique_count(gt_all$Variants),
+      nrow(v_all),
+      sum(v_all$HomoTag == "Hetero", na.rm = TRUE),
+      length(homo_variants),
+      calc_unique_count(qc_v$Variants),
+      nrow(qc_gt)
+    ),
+    stringsAsFactors = FALSE
+  )
+}
+
+choose_pct_column <- function(v_df) {
+  pct_candidates <- c("PCTcell", "CellNPCT")
+  pct_candidates[pct_candidates %in% colnames(v_df)][1]
+}
+
+top_variant_table <- function(v_df, n = 20) {
+  if (!nrow(v_df)) {
+    return(data.frame())
+  }
+  pct_col <- choose_pct_column(v_df)
+  if (is.na(pct_col) || is.null(pct_col)) {
+    pct_col <- "CellN"
+  }
+  out <- v_df %>%
+    mutate(max_heteroplasmy = PositiveMean) %>%
+    arrange(desc(.data[[pct_col]]), desc(CellN), desc(maxcts)) %>%
+    dplyr::select(any_of(c(
+      "Variants", pct_col, "CellN", "PositiveMean", "PositiveMean_cts",
+      "maxcts", "totalVAF", "CV", "HomoTag", "changes", "types",
+      "gene", "impact", "Disease"
+    ))) %>%
+    utils::head(n)
+  names(out)[names(out) == pct_col] <- "PctCells"
+  out
+}
+
+variant_count_bin_summary <- function(gt_df) {
+  if (!nrow(gt_df)) {
+    return(data.frame(Bin = character(), Count = integer(), Fraction = numeric()))
+  }
+  counts <- c(
+    `1 UMI` = sum(gt_df$Freq == 1, na.rm = TRUE),
+    `2 UMI` = sum(gt_df$Freq == 2, na.rm = TRUE),
+    `>=3 UMI` = sum(gt_df$Freq >= 3, na.rm = TRUE)
+  )
+  total <- sum(counts)
+  data.frame(
+    Bin = names(counts),
+    Count = unname(counts),
+    Fraction = if (total > 0) round(unname(counts) / total, 4) else 0,
+    stringsAsFactors = FALSE
+  )
+}
+
+metrics_row <- function(sample_name, ob, qc_result, qc_status, qc_message) {
+  gt_all <- as.data.frame(ob@GTsummary.filtered)
+  v_all <- as.data.frame(ob@V.fitered)
+  variants_gtsummary <- as.data.frame(attr(ob, "GTsummary.ini"))
+  qc_gt <- subset(gt_all, !Variants %in% c(unique(ob@HomoVariants), hotcall_variants))
+  pct_col <- choose_pct_column(v_all)
+  data.frame(
+    sample = sample_name,
+    threshold = unname(ob@para["Threhold"]),
+    variants_gtsummary_rows = nrow(variants_gtsummary),
+    variants_gtsummary_unique_variants = calc_unique_count(variants_gtsummary$Variants),
+    filtered_rows = nrow(gt_all),
+    filtered_unique_variants = calc_unique_count(gt_all$Variants),
+    v_filtered_rows = nrow(v_all),
+    hetero_variants = sum(v_all$HomoTag == "Hetero", na.rm = TRUE),
+    homo_variants = length(unique(ob@HomoVariants)),
+    qc_matrix_rows = nrow(qc_gt),
+    qc_matrix_variants = calc_unique_count(qc_gt$Variants),
+    top_variant_pct_cells = if (!is.null(pct_col) && nrow(v_all)) max(v_all[[pct_col]], na.rm = TRUE) else NA_real_,
+    qc_status = qc_status,
+    qc_message = qc_message,
+    stringsAsFactors = FALSE
+  )
+}
+
+filter_steps <- describe_filter_steps(redeem_obj)
+filter_summary <- build_filtering_summary(redeem_obj)
+show_text <- capture_show(redeem_obj)
+variants_preview <- safe_head(as.data.frame(attr(redeem_obj, "GTsummary.ini")), 3)
+filtered_preview <- safe_head(redeem_obj@GTsummary.filtered, 10)
+top_variants <- top_variant_table(as.data.frame(redeem_obj@V.fitered), params$top_n_variants)
+
+qc_gtsummary <- subset(
+  as.data.frame(redeem_obj@GTsummary.filtered),
+  !Variants %in% c(unique(redeem_obj@HomoVariants), hotcall_variants)
+)
+vc_bins <- variant_count_bin_summary(qc_gtsummary)
+
+qc_status <- "not_run"
+qc_message <- ""
+qc_result <- NULL
+variant_plots <- NULL
+```
+
+## Metadata
+
+```{r}
+metadata_df <- data.frame(
+  Field = c("Sample", "Threshold", "Input RDS", "redeemV final dir", "Report generated"),
+  Value = c(
+    sample_name,
+    thr,
+    normalizePath(params$input_rds),
+    final_dir_abs,
+    format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")
+  ),
+  stringsAsFactors = FALSE
+)
+kable(metadata_df)
+```
+
+## Upstream redeemV QC
+
+```{r}
+if (file.exists(redeemv_qc_png_local)) {
+  knitr::include_graphics(redeemv_qc_png_local)
+} else {
+  cat("Upstream redeemV QC PNG not found at:", redeemv_qc_png, "\n")
+}
+```
+
+## Filtering Summary
+
+```{r}
+kable(filter_steps)
+```
+
+```{r}
+kable(filter_summary)
+```
+
+## Object Summary
+
+```{r}
+cat("```text\n", show_text, "\n```\n", sep = "")
+```
+
+### VariantsGTSummary Preview
+
+```{r}
+kable(variants_preview)
+```
+
+### GTsummary.filtered Preview
+
+```{r}
+kable(filtered_preview)
+```
+
+## Depth QC
+
+```{r, fig.width=14, fig.height=5, out.width="100%"}
+depth_plots <- safe_plot(plot_depth(redeem_obj))
+if (inherits(depth_plots, "error")) {
+  cat("Depth QC failed:", conditionMessage(depth_plots), "\n")
+} else {
+  print(depth_plots$combined)
+}
+```
+
+## Mutation Profile
+
+```{r, fig.width=12, fig.height=5, out.width="100%"}
+mutation_profile_plot <- safe_plot(MutationProfile.bulk(redeem_obj@UniqueV))
+if (inherits(mutation_profile_plot, "error")) {
+  cat("MutationProfile.bulk failed:", conditionMessage(mutation_profile_plot), "\n")
+} else {
+  print(mutation_profile_plot)
+}
+```
+
+## Variant QC
+
+### Top Variants by Percent Cells
+
+```{r}
+kable(top_variants)
+```
+
+### Cell-Variant Count Bins
+
+```{r}
+kable(vc_bins)
+```
+
+### Variant Plots
+
+```{r, fig.width=28, fig.height=6, out.width="100%"}
+variant_plots <- tryCatch(
+  quiet_eval(plot_variant(redeem_obj)),
+  error = function(e) e
+)
+if (inherits(variant_plots, "error")) {
+  cat("plot_variant failed:", conditionMessage(variant_plots), "\n")
+} else {
+  print(variant_plots$p1)
+  print(variant_plots$p2)
+  print(variant_plots$p3)
+  print(variant_plots$p4)
+}
+```
+
+## Consensus QC
+
+```{r, fig.width=24, fig.height=7, out.width="100%"}
+consensus_error <- tryCatch(
+  {
+    quiet_eval(Show_Consensus(redeem_obj, N = params$consensus_n))
+    NULL
+  },
+  error = function(e) e
+)
+if (inherits(consensus_error, "error")) {
+  cat("Show_Consensus failed:", conditionMessage(consensus_error), "\n")
+}
+```
+
+## Filter2 QC
+
+```{r}
+redeem_obj_qc <- tryCatch(
+  quiet_eval(add_raw_fragment(redeem_obj, raw = params$raw_name)),
+  error = function(e) e
+)
+if (inherits(redeem_obj_qc, "error")) {
+  qc_status <- "raw_fragment_failed"
+  qc_message <- conditionMessage(redeem_obj_qc)
+} else {
+  qc_attempt <- tryCatch(
+    {
+      grDevices::pdf(NULL)
+      on.exit(grDevices::dev.off(), add = TRUE)
+      quiet_eval(run_redeem_qc(redeem_obj_qc, redeem_obj_qc@HomoVariants))
+    },
+    error = function(e) e
+  )
+  if (inherits(qc_attempt, "error")) {
+    qc_status <- "qc_failed_but_report_rendered"
+    qc_message <- conditionMessage(qc_attempt)
+  } else {
+    qc_status <- "ok"
+    qc_result <- qc_attempt
+  }
+}
+status_df <- data.frame(
+  qc_status = qc_status,
+  qc_message = ifelse(nzchar(qc_message), qc_message, ""),
+  stringsAsFactors = FALSE
+)
+kable(status_df)
+```
+
+```{r}
+if (!is.null(qc_result)) {
+  kable(data.frame(
+    Metric = names(qc_result$transversion_rate),
+    Value = unname(qc_result$transversion_rate),
+    stringsAsFactors = FALSE
+  ))
+}
+```
+
+```{r}
+if (!is.null(qc_result)) {
+  metric_block <- qc_result$report_metric
+  metric_df <- data.frame(
+    Metric = c(
+      "number_of_total_mut",
+      "number_of_total_cells",
+      "median_mut_per_cell",
+      "median_cells_connected",
+      "fraction_in_component"
+    ),
+    Value = c(
+      metric_block$number_of_total_mut,
+      metric_block$number_of_total_cells,
+      median(metric_block$mut_per_cell),
+      median(metric_block$number_cell_connected),
+      metric_block$fraction_in_component
+    ),
+    stringsAsFactors = FALSE
+  )
+  kable(metric_df)
+}
+```
+
+```{r, fig.width=18, fig.height=5, out.width="100%"}
+if (!is.null(qc_result)) {
+  print(qc_result$plots$p_pos)
+  print(qc_result$plots$pos_1mol)
+  print(qc_result$plots$p_cell_maxcts)
+  print(qc_result$plots$p_cell_meancts)
+}
+```
+
+```{r}
+metrics_df <- metrics_row(sample_name, redeem_obj, qc_result, qc_status, qc_message)
+if (!is.null(params$output_metrics_tsv) && nzchar(params$output_metrics_tsv)) {
+  write.table(metrics_df, params$output_metrics_tsv, sep = "\t", quote = FALSE, row.names = FALSE)
+}
+if (!is.null(params$output_report_rds) && nzchar(params$output_report_rds)) {
+  saveRDS(
+    list(
+      sample_name = sample_name,
+      threshold = thr,
+      filtering_summary = filter_summary,
+      variant_count_bins = vc_bins,
+      qc_status = qc_status,
+      qc_message = qc_message,
+      qc_result = qc_result
+    ),
+    params$output_report_rds
+  )
+}
+```

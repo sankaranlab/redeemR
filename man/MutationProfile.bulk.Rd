@@ -7,14 +7,14 @@
 MutationProfile.bulk(cell_variants)
 }
 \arguments{
-\item{cell_variants}{a vector of variants formated as c('93_A_G''103_G_A''146_T_C'}
+\item{cell_variants}{A character vector of variants formatted as \code{position_ref_alt}, for example \code{c("93_A_G", "103_G_A")}.}
 }
 \value{
-p from ggplot2
+A ggplot object.
 }
 \description{
 This function allows you to plot the mito mutation signatures
 }
 \examples{
-MutationProfile.bulk(DN1CD34_1.Variants.feature.lst[[name]]$Variants
+MutationProfile.bulk(c("93_A_G", "103_G_A", "146_T_C"))
 }

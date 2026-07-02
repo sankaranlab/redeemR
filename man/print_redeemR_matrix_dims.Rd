@@ -4,7 +4,7 @@
 \alias{print_redeemR_matrix_dims}
 \title{Print redeemR matrix dimensions}
 \usage{
-print_redeemR_matrix_dims(ob)
+print_redeemR_matrix_dims(ob, sample_name = NULL)
 }
 \arguments{
 \item{ob}{A redeemR object}
@@ -16,6 +16,8 @@ Prints matrix dimensions to console
 Displays the dimensions of all matrices in a redeemR object for quick inspection.
 }
 \examples{
+\dontrun{
 print_redeemR_matrix_dims(redeemR_object)
+}
 
 }

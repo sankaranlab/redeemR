@@ -42,7 +42,9 @@ return(ob)
 #' but in case not match, here provides a way to transform into scredeemR order
 #' @return meta a dataframe
 #' @examples
+#' \dontrun{
 #' Translate_RNA2ATAC(meta)
+#' }
 #' @export
 Translate_RNA2ATAC<-function(meta=bmmc.filtered@meta.data,PostFix=T,bclength=16,from=c(1,2,3),to=c(1,2,3)){
 data(ATACWhite)

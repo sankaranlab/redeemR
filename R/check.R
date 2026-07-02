@@ -7,7 +7,9 @@
 #'
 #' @return Prints confirmation messages for each consistency check.
 #' @examples
+#' \dontrun{
 #' check_redeem(my_redeem)
+#' }
 #' @export
 check_redeem <-function(obj){
     if (dim(obj@Cts.Mtx)[1]==dim(obj@Cts.Mtx.bi)[1] & dim(obj@Cts.Mtx)[2]==dim(obj@Cts.Mtx)[2]){

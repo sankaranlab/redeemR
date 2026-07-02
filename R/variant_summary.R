@@ -11,8 +11,10 @@
 #'         Automatically detects column formats: new (CellBC/Position/Total/VerySensitive/Sensitive/Specific), 
 #'         new LS/S/VS (CellBC/Position/Total/LS/S/VS), or old (V1/V2/V3/V4/V5/V6).
 #' @examples
-#' WD<-"/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor01_CD34_1_Multiomekit/MTenrichCombine/Enrich/CW_mgatk/final"
-#' DN1CD34_1.depth<-DepthSummary(WD,Processed = T)
+#' \dontrun{
+#' WD <- "/path/to/redeemV/final"
+#' DN1CD34_1.depth <- DepthSummary(WD)
+#' }
 #' @export
 #' @import dplyr
 DepthSummary<-function(path,CellSubset=NA,only_Total=T){
@@ -125,8 +127,10 @@ DepthSummary<-function(path,CellSubset=NA,only_Total=T){
 #' @param CellSubset A vector of ATAC cell names for subsetting, default is NA
 #' @return A dataframe with Position and counts of cells with non-zero coverage for each threshold (Total, LS, S, VS)
 #' @examples
-#' WD<-"/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor01_CD34_1_Multiomekit/MTenrichCombine/Enrich/CW_mgatk/final"
-#' pos_coverage<-PosCoverageCellCount(WD)
+#' \dontrun{
+#' WD <- "/path/to/redeemV/final"
+#' pos_coverage <- PosCoverageCellCount(WD)
+#' }
 #' @export
 #' @import dplyr
 PosCoverageCellCount<-function(path,CellSubset=NA){
@@ -229,7 +233,7 @@ PosCoverageCellCount<-function(path,CellSubset=NA){
 #' @param RawGenotypes Well-named "RawGenotypes.Sensitive.StrandBalance" file in function redeemR.read or CW_mgatk.read
 #' @param filterN Boolean variable, if true filter out the variant with "N"
 #' @return Genotypes.summary a dataframe that summarize several metrics for each genotype
-#' @examples Usually used inside of function CW_mgatk.read
+#' @details Usually used inside `redeemR.read()` or `CW_mgatk.read()`.
 #' @export
 #' @import dplyr
 GTSummary<-function(RawGenotypes,filterN=T){ ## At this moment, the context with N is probably prone to error due to mapping, in the future should work on realignment
@@ -264,8 +268,11 @@ return(Genotypes.summary)
 #' @param thr The thredhold of filtering T(Total),LS(Less Stringent:c=0.75,a1=2,a2=1), S(Stringent:c=0.75,a1=3,a2=2), VS(Very Stringent:c=0.75,a1=4,a2=3)"
 #' @param Processed Boolean variable (Default F), if true directly readRDS("VariantsGTSummary.RDS") or, generate and saveout "VariantsGTSummary.RDS"
 #' @return this returns depth which is a list of 4 df (Total/LS/S/VS), each is a genotype summary
-#' @examples WD<-"/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor01_CD34_1_Multiomekit/MTenrichCombine/Enrich/CW_mgatk/final"
-#' DN1CD34_1.VariantsGTSummary<-CW_mgatk.read(WD,Processed =T)
+#' @examples
+#' \dontrun{
+#' WD <- "/path/to/redeemV/final"
+#' DN1CD34_1.VariantsGTSummary <- redeemR.read(WD, thr = "S")
+#' }
 #' @export
 redeemR.read<-function(path,thr="S",Processed=F,rdsname="/VariantsGTSummary.RDS"){
 if(Processed){
@@ -312,8 +319,11 @@ if(Processed){
 #' @param Processed Boolean variable (Default F), if true directly readRDS("VariantsGTSummary.RDS") or, generate and saveout "VariantsGTSummary.RDS"
 #' @param edge_trim  how many bp to be trimmed, default is 4, 
 #' @return this returns depth which is a list of 4 df (Total/LS/S/VS), each is a genotype summary
-#' @examples WD<-"/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor01_CD34_1_Multiomekit/MTenrichCombine/Enrich/CW_mgatk/final"
-#' DN1CD34_1.VariantsGTSummary<-CW_mgatk.read(WD,Processed =T)
+#' @examples
+#' \dontrun{
+#' WD <- "/path/to/redeemV/final"
+#' DN1CD34_1.VariantsGTSummary <- redeemR.read(WD, thr = "S")
+#' }
 #' @export
 redeemR.read.trim<-function(path,
                             thr="S",
@@ -438,8 +448,11 @@ CV<-function(x){
 #' @param path The XX/final folder, the output from mitoV
 #' @param Processed Boolean variable (Default F), if true directly readRDS("VariantsGTSummary.RDS") or, generate and saveout "VariantsGTSummary.RDS"
 #' @return this returns depth which is a list of 4 df (Total/LS/S/VS), each is a genotype summary
-#' @examples WD<-"/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor01_CD34_1_Multiomekit/MTenrichCombine/Enrich/CW_mgatk/final"
-#' DN1CD34_1.VariantsGTSummary<-CW_mgatk.read(WD,Processed =T)
+#' @examples
+#' \dontrun{
+#' WD <- "/path/to/redeemV/final"
+#' DN1CD34_1.VariantsGTSummary <- CW_mgatk.read(WD, Processed = TRUE)
+#' }
 #' @export
 CW_mgatk.read<-function(path,Processed=F){
 message("CW_mgatk.read is the old version (simultanously reading in all threadhold as a list), it has been deprecated, please use redeemR.read")
@@ -482,7 +495,10 @@ return(VariantsGTSummary)
 #' @param QualifyCellCut Default 10, Minimum depth for a qualified cell
 #' @return this returns feature.list
 #' @examples
-#' DN1CD34_1.Variants.feature.lst<-Vfilter_v3(InputSummary=DN1CD34_1.VariantsGTSummary,depth=DN1CD34_1.depth)
+#' \dontrun{
+#' DN1CD34_1.Variants.feature.lst <- Vfilter_v3(InputSummary = DN1CD34_1.VariantsGTSummary,
+#'   depth = DN1CD34_1.depth)
+#' }
 #' @export
 #' @import dplyr
 Vfilter_v3<-function(InputSummary,depth,Rmvhomo=F,Min_Cells=2, Max_Count_perCell=2,QualifyCellCut=10){
@@ -652,7 +668,9 @@ return(ob)
 #' @param WD The path to the work space usually  XXX/mitoV/final
 #' @return a dataframe that store the percentage of variant in a given threahold again total
 #' @examples
-#' DN9_BMMC_RejectRate<-ComputeRejectRate("/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor4Donor9/Donor9/DN9_BMMC/MTenrichCombine/mitoV/final/")
+#' \dontrun{
+#' DN9_BMMC_RejectRate <- ComputeRejectRate_legacy("/path/to/redeemV/final/")
+#' }
 #' @export
 ComputeRejectRate_legacy<-function(WD){
 message("This has been deprecated, please use ComputeRejectRate that takes redeemR object as input")

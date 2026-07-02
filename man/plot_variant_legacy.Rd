@@ -38,5 +38,9 @@ p3: CellN(Number of caells that carry the variants) VS maxcts( The number of var
 p4: Histogram to show the distribution of the number of variant per cell
 }
 \examples{
-plot_variant(DN1CD34_1.VariantsGTSummary,DN1CD34_1.Variants.feature.lst,depth=DN1CD34_1.depth,cat=c("Total","VerySensitive","Sensitive","Specific"),p4xlim = 30)
+\dontrun{
+plot_variant_legacy(DN1CD34_1.VariantsGTSummary, DN1CD34_1.Variants.feature.lst,
+  depth = DN1CD34_1.depth, cat = c("Total", "VerySensitive", "Sensitive", "Specific"),
+  p4xlim = 30)
+}
 }

@@ -1,300 +1,519 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>/404.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/404.html</loc>
   </url>
   <url>
-    <loc>/LICENSE-text.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/LICENSE-text.html</loc>
   </url>
   <url>
-    <loc>/articles/index.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/articles/filter2-qc.html</loc>
   </url>
   <url>
-    <loc>/articles/package_intro.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/articles/index.html</loc>
   </url>
   <url>
-    <loc>/authors.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/articles/package_intro.html</loc>
   </url>
   <url>
-    <loc>/index.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/articles/redeemr-workflow.html</loc>
   </url>
   <url>
-    <loc>/news/index.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/articles/variant-annotation.html</loc>
   </url>
   <url>
-    <loc>/reference/ATAC_Wrapper.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/authors.html</loc>
   </url>
   <url>
-    <loc>/reference/AddDatatoplot_clustering-mitoTracing-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/index.html</loc>
   </url>
   <url>
-    <loc>/reference/AddDatatoplot_clustering-redeemR-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/news/index.html</loc>
   </url>
   <url>
-    <loc>/reference/AddDatatoplot_clustering.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/ATAC_Wrapper.html</loc>
   </url>
   <url>
-    <loc>/reference/AddDist-mitoTracing-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/AddDatatoplot_clustering-mitoTracing-method.html</loc>
   </url>
   <url>
-    <loc>/reference/AddDist-redeemR-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/AddDatatoplot_clustering-redeemR-method.html</loc>
   </url>
   <url>
-    <loc>/reference/AddDist.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/AddDatatoplot_clustering.html</loc>
   </url>
   <url>
-    <loc>/reference/AddHemSignature.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/AddDist-mitoTracing-method.html</loc>
   </url>
   <url>
-    <loc>/reference/AddTree-mitoTracing-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/AddDist-redeemR-method.html</loc>
   </url>
   <url>
-    <loc>/reference/AddTree-redeemR-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/AddDist.html</loc>
   </url>
   <url>
-    <loc>/reference/AddTree.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/AddDist_legacy-mitoTracing-method.html</loc>
   </url>
   <url>
-    <loc>/reference/Add_AssignVariant-mitoTracing-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/AddDist_legacy.html</loc>
   </url>
   <url>
-    <loc>/reference/Add_AssignVariant-redeemR-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/AddHemSignature.html</loc>
   </url>
   <url>
-    <loc>/reference/Add_AssignVariant.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/AddTree-mitoTracing-method.html</loc>
   </url>
   <url>
-    <loc>/reference/Add_DepthMatrix-mitoTracing-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/AddTree-redeemR-method.html</loc>
   </url>
   <url>
-    <loc>/reference/Add_DepthMatrix-redeemR-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/AddTree.html</loc>
   </url>
   <url>
-    <loc>/reference/Add_DepthMatrix.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Add_AssignVariant-mitoTracing-method.html</loc>
   </url>
   <url>
-    <loc>/reference/Add_tree_cut-mitoTracing-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Add_AssignVariant-redeemR-method.html</loc>
   </url>
   <url>
-    <loc>/reference/Add_tree_cut-redeemR-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Add_AssignVariant.html</loc>
   </url>
   <url>
-    <loc>/reference/Add_tree_cut.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Add_DepthMatrix-mitoTracing-method.html</loc>
   </url>
   <url>
-    <loc>/reference/BinaryDist.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Add_DepthMatrix-redeemR-method.html</loc>
   </url>
   <url>
-    <loc>/reference/CV.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Add_DepthMatrix.html</loc>
   </url>
   <url>
-    <loc>/reference/CW_mgatk.read.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Add_DepthMatrix_filter2.html</loc>
   </url>
   <url>
-    <loc>/reference/Clone_FinderMarker.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Add_tree_cut-mitoTracing-method.html</loc>
   </url>
   <url>
-    <loc>/reference/ComputeRejectRate.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Add_tree_cut-redeemR-method.html</loc>
   </url>
   <url>
-    <loc>/reference/CountVperCell.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Add_tree_cut.html</loc>
   </url>
   <url>
-    <loc>/reference/Create_mitoTracing.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/AddsigTag.6.new.html</loc>
   </url>
   <url>
-    <loc>/reference/Create_redeemR.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Annotate_base_change.html</loc>
   </url>
   <url>
-    <loc>/reference/DE.gettripple.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/BinaryDist.html</loc>
   </url>
   <url>
-    <loc>/reference/Datatoplots-class.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Build_Manhattan_Tree.html</loc>
   </url>
   <url>
-    <loc>/reference/DepthSummary.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/CV.html</loc>
   </url>
   <url>
-    <loc>/reference/DistObjects-class.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/CW_mgatk.read.html</loc>
   </url>
   <url>
-    <loc>/reference/DoDE.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Clone_FinderMarker.html</loc>
   </url>
   <url>
-    <loc>/reference/FromDist2Graph.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/ComputeRejectRate.html</loc>
   </url>
   <url>
-    <loc>/reference/GEM_Wrapper.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/ComputeRejectRate_legacy.html</loc>
   </url>
   <url>
-    <loc>/reference/GTSummary.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/CountOverlap_Adj.html</loc>
   </url>
   <url>
-    <loc>/reference/Get_Clonal_Variants.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/CountVperCell.html</loc>
   </url>
   <url>
-    <loc>/reference/LineageBiasPlot.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Create_mitoTracing.html</loc>
   </url>
   <url>
-    <loc>/reference/MakeAllNodes.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Create_redeemR.html</loc>
   </url>
   <url>
-    <loc>/reference/MakeDF4Regress.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Create_redeemR_model.html</loc>
   </url>
   <url>
-    <loc>/reference/MakeNN.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/DE.gettripple.html</loc>
   </url>
   <url>
-    <loc>/reference/Make_AnnTable.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Datatoplots-class.html</loc>
   </url>
   <url>
-    <loc>/reference/Make_Cells4Nodes.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/DepthSummary.html</loc>
   </url>
   <url>
-    <loc>/reference/Make_matrix-mitoTracing-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/DistObjects-class.html</loc>
   </url>
   <url>
-    <loc>/reference/Make_matrix-redeemR-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/DoDE.html</loc>
   </url>
   <url>
-    <loc>/reference/Make_matrix.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/FromDist2Graph.html</loc>
   </url>
   <url>
-    <loc>/reference/Make_tree-mitoTracing-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Fun.enrich_withFC.html</loc>
   </url>
   <url>
-    <loc>/reference/Make_tree-redeemR-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Fun.enrich_withFC.pvalue.html</loc>
   </url>
   <url>
-    <loc>/reference/Make_tree.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/GEM_Wrapper.html</loc>
   </url>
   <url>
-    <loc>/reference/MergeMtx.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/GTSummary.html</loc>
   </url>
   <url>
-    <loc>/reference/Motifenrich.binom.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Get_Clonal_Variants.html</loc>
   </url>
   <url>
-    <loc>/reference/Multi_Wrapper.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Getgenenumber.html</loc>
   </url>
   <url>
-    <loc>/reference/MutationProfile.bulk.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Getpallet2.html</loc>
   </url>
   <url>
-    <loc>/reference/NN2M.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/LineageBiasPlot.html</loc>
   </url>
   <url>
-    <loc>/reference/ProgenyMapping.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/MakeAllNodes.html</loc>
   </url>
   <url>
-    <loc>/reference/ProgenyMapping_np.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/MakeDF4Regress.html</loc>
   </url>
   <url>
-    <loc>/reference/Reclustering.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/MakeNN.html</loc>
   </url>
   <url>
-    <loc>/reference/Reclustering_hm.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Make_AnnTable.html</loc>
   </url>
   <url>
-    <loc>/reference/Run_Lin_regression.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Make_Cells4Nodes.html</loc>
   </url>
   <url>
-    <loc>/reference/Run_Lin_regression_poi.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Make_matrix-mitoTracing-method.html</loc>
   </url>
   <url>
-    <loc>/reference/Runplot_scale_2.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Make_matrix-redeemR-method.html</loc>
   </url>
   <url>
-    <loc>/reference/Runplot_scale_3.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Make_matrix.html</loc>
   </url>
   <url>
-    <loc>/reference/SeuratLSIClustering-mitoTracing-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Make_tree-mitoTracing-method.html</loc>
   </url>
   <url>
-    <loc>/reference/SeuratLSIClustering-redeemR-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Make_tree-redeemR-method.html</loc>
   </url>
   <url>
-    <loc>/reference/SeuratLSIClustering.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Make_tree.html</loc>
   </url>
   <url>
-    <loc>/reference/Show_Consensus.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Make_tree_legacy-mitoTracing-method.html</loc>
   </url>
   <url>
-    <loc>/reference/Subset_MitoTracing.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Make_tree_legacy.html</loc>
   </url>
   <url>
-    <loc>/reference/Subset_redeemR.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/MergeMtx.html</loc>
   </url>
   <url>
-    <loc>/reference/TREE-class.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Motifenrich.binom.html</loc>
   </url>
   <url>
-    <loc>/reference/Tomerge_v2.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Multi_Wrapper.html</loc>
   </url>
   <url>
-    <loc>/reference/Translate_RNA2ATAC.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/MutationProfile.bulk.html</loc>
   </url>
   <url>
-    <loc>/reference/Translate_simple_ATAC2RNA.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/NN2M.html</loc>
   </url>
   <url>
-    <loc>/reference/Translate_simple_RNA2ATAC.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/PosCoverageCellCount.html</loc>
   </url>
   <url>
-    <loc>/reference/Vfilter_v3.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/ProgenyMapping.html</loc>
   </url>
   <url>
-    <loc>/reference/Vfilter_v4.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/ProgenyMapping_np.html</loc>
   </url>
   <url>
-    <loc>/reference/add_derived_profile_info.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Reclustering.html</loc>
   </url>
   <url>
-    <loc>/reference/df2ProfileMtx.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Reclustering_hm.html</loc>
   </url>
   <url>
-    <loc>/reference/get_ancestral_nodes.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Run_Lin_regression.html</loc>
   </url>
   <url>
-    <loc>/reference/index.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Run_Lin_regression_poi.html</loc>
   </url>
   <url>
-    <loc>/reference/mitoTracing-class.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Runplot_scale_2.html</loc>
   </url>
   <url>
-    <loc>/reference/plot_depth.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Runplot_scale_3.html</loc>
   </url>
   <url>
-    <loc>/reference/plot_npSummary.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/SeuratLSIClustering-mitoTracing-method.html</loc>
   </url>
   <url>
-    <loc>/reference/plot_variant.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/SeuratLSIClustering-redeemR-method.html</loc>
   </url>
   <url>
-    <loc>/reference/quick_w_cosine.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/SeuratLSIClustering.html</loc>
   </url>
   <url>
-    <loc>/reference/quick_w_jaccard.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Show_Consensus.html</loc>
   </url>
   <url>
-    <loc>/reference/reconstruct_genotype_summary.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Subset_MitoTracing.html</loc>
   </url>
   <url>
-    <loc>/reference/redeemR-class.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Subset_redeemR.html</loc>
   </url>
   <url>
-    <loc>/reference/redeemR.read.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/TREE-class.html</loc>
   </url>
   <url>
-    <loc>/reference/show-mitoTracing-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Tomerge.col.html</loc>
   </url>
   <url>
-    <loc>/reference/show-redeemR-method.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Tomerge_v2.html</loc>
   </url>
   <url>
-    <loc>/reference/split_profile.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Translate_RNA2ATAC.html</loc>
   </url>
   <url>
-    <loc>/reference/str2vector.html</loc>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Translate_simple_ATAC2RNA.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Translate_simple_RNA2ATAC.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Vfilter_v3.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/Vfilter_v4.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/add_annotation_redeem.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/add_changes.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/add_derived_profile_info.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/add_freq_raw.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/add_hypermutable.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/add_median_depth_to_redeemR.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/add_prop_2_3_to_redeemR.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/add_raw_fragment.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/add_types.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/annotate_all_variants.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/annotate_variants_aachange.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/annotate_variants_blacklist.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/annotate_variants_homopolymer.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/annotate_variants_hypermutable.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/annotate_variants_mito_disease.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/annotate_variants_population_stats.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/append_dim_row.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/binomialtest.msig.enrch_deplet.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/check_redeem.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/clean_redeem.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/clean_redeem_remove_blacklist_RSRS50.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/clean_redeem_remove_low_median_depth.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/clean_redeem_removehomo.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/clean_redeem_removehot.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/compute_distance_matrix.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/convert_mitotracing_redeemR.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/convert_redeem_matrix_long.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/convert_variant.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/create_rooted_tree.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/df2ProfileMtx.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/filter_redeemR_by_LIS.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/filter_redeemR_by_UMI.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/filter_redeemR_by_cells.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/filter_redeemR_by_hetero.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/filter_redeemR_by_meancount.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/filter_redeemR_by_rules.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/get_ancestral_nodes.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/get_hype_v2.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/gsea_enrichmentheat.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/make_V.fitered_from_mtx.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/make_ks_test_df.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/make_position_df_3.4.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/make_position_df_3.5.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/mitoTracing-class.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/plot_depth.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/plot_depth_legacy.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/plot_npSummary.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/plot_tree_heatmap_teng_cw.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/plot_variant.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/plot_variant_legacy.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/print_redeemR_matrix_dims.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/quick_w_cosine.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/quick_w_jaccard.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/reconstruct_genotype_summary.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/redeemR-class.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/redeemR-data.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/redeemR.read.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/redeemR.read.multiple.trim.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/redeemR.read.trim.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/run_redeem_qc.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/safe_dim.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/show-mitoTracing-method.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/show-redeemR-method.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/split_profile.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/str2vector.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/subset_redeem.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/theme_cw1.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/theme_cw2.html</loc>
+  </url>
+  <url>
+    <loc>https://chenweng1991.github.io/redeemR/reference/update_redeemR_from_GTsummary.html</loc>
   </url>
 </urlset>

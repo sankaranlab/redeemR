@@ -22,6 +22,8 @@ Add per-variant QC features from \code{redeemR@GTsummary.filtered} into
 }
 }
 \examples{
+\dontrun{
 redeemR <- add_prop_2_3_to_redeemR(redeemR)
+}
 
 }

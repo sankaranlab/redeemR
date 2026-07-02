@@ -26,6 +26,8 @@ new LS/S/VS (CellBC/Position/Total/LS/S/VS), or old (V1/V2/V3/V4/V5/V6).
 This function allows you to summarize the depth
 }
 \examples{
-WD<-"/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor01_CD34_1_Multiomekit/MTenrichCombine/Enrich/CW_mgatk/final"
-DN1CD34_1.depth<-DepthSummary(WD,Processed = T)
+\dontrun{
+WD <- "/path/to/redeemV/final"
+DN1CD34_1.depth <- DepthSummary(WD)
+}
 }

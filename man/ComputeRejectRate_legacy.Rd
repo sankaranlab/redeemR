@@ -16,5 +16,7 @@ a dataframe that store the percentage of variant in a given threahold again tota
 This function allows you to computae the filtering rate for each single cell
 }
 \examples{
-DN9_BMMC_RejectRate<-ComputeRejectRate("/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor4Donor9/Donor9/DN9_BMMC/MTenrichCombine/mitoV/final/")
+\dontrun{
+DN9_BMMC_RejectRate <- ComputeRejectRate_legacy("/path/to/redeemV/final/")
+}
 }

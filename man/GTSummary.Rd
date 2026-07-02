@@ -17,6 +17,6 @@ Genotypes.summary a dataframe that summarize several metrics for each genotype
 \description{
 This function allows you to summarize the meta data for each genotyped variant
 }
-\examples{
-Usually used inside of function CW_mgatk.read
+\details{
+Usually used inside \code{redeemR.read()} or \code{CW_mgatk.read()}.
 }

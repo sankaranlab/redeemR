@@ -22,9 +22,9 @@ A list containing both the combined patchwork plot and individual plots
 This function allows you to plot both position-wise and cell-wise mito depth summary
 }
 \examples{
+\dontrun{
 depth_plots <- plot_depth(redeemR_obj)
-# Use the combined plot:
 depth_plots$combined
-# Or use individual plots:
 depth_plots$position_depth | depth_plots$cell_depth
+}
 }

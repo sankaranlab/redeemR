@@ -26,6 +26,8 @@ This function allows you to read raw data from XX/final folder, the output from 
 It process the data same way as CW_mgatk.read but need to specify one threadhold(thr)
 }
 \examples{
-WD<-"/lab/solexa_weissman/cweng/Projects/MitoTracing_Velocity/SecondaryAnalysis/Donor01_CD34_1_Multiomekit/MTenrichCombine/Enrich/CW_mgatk/final"
-DN1CD34_1.VariantsGTSummary<-CW_mgatk.read(WD,Processed =T)
+\dontrun{
+WD <- "/path/to/redeemV/final"
+DN1CD34_1.VariantsGTSummary <- redeemR.read(WD, thr = "S")
+}
 }

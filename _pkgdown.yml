@@ -1,0 +1,228 @@
+url: https://chenweng1991.github.io/redeemR/
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  bslib:
+    primary: "#2c3e50"
+    base_font: {google: "Source Sans 3"}
+    heading_font: {google: "Source Sans 3"}
+    code_font: {google: "Source Code Pro"}
+
+home:
+  title: redeemR
+  description: Downstream analysis for REDEEM-V mitochondrial consensus variant calls.
+
+navbar:
+  structure:
+    left: [intro, articles, reference, news]
+    right: [github]
+  components:
+    intro:
+      text: Get started
+      href: articles/redeemr-workflow.html
+    articles:
+      text: Articles
+      menu:
+      - text: redeemR2.0 workflow
+        href: articles/redeemr-workflow.html
+      - text: Filter2 QC report
+        href: articles/filter2-qc.html
+      - text: Variant annotation
+        href: articles/variant-annotation.html
+    reference:
+      text: Reference
+      href: reference/index.html
+    news:
+      text: Changelog
+      href: news/index.html
+    github:
+      icon: fab fa-github
+      href: https://github.com/chenweng1991/redeemR
+      aria-label: GitHub
+
+articles:
+- title: redeemR2.0 workflow
+  navbar: ~
+  contents:
+  - redeemr-workflow
+  - filter2-qc
+  - variant-annotation
+
+reference:
+- title: Core redeemR2.0 workflow
+  desc: Primary functions for importing REDEEM-V consensus calls and producing a filter2-ready redeemR object.
+  contents:
+  - redeemR.read.trim
+  - redeemR.read
+  - Create_redeemR
+  - Create_redeemR_model
+  - clean_redeem
+  - add_annotation_redeem
+  - clean_redeem_remove_blacklist_RSRS50
+  - Add_DepthMatrix_filter2
+  - add_median_depth_to_redeemR
+  - clean_redeem_remove_low_median_depth
+  - add_prop_2_3_to_redeemR
+  - update_redeemR_from_GTsummary
+
+- title: REDEEM-V parsing and summaries
+  desc: Utilities for reading final/ outputs, depth summaries, genotype summaries, and consensus diagnostics.
+  contents:
+  - DepthSummary
+  - PosCoverageCellCount
+  - GTSummary
+  - reconstruct_genotype_summary
+  - ComputeRejectRate
+  - Show_Consensus
+  - run_redeem_qc
+  - print_redeemR_matrix_dims
+  - check_redeem
+
+- title: Variant annotation
+  desc: Population, context, blacklist, coding-impact, disease, and mutation-type annotation helpers.
+  contents:
+  - annotate_all_variants
+  - annotate_variants_population_stats
+  - annotate_variants_hypermutable
+  - annotate_variants_blacklist
+  - annotate_variants_homopolymer
+  - annotate_variants_aachange
+  - annotate_variants_mito_disease
+  - Annotate_base_change
+  - add_changes
+  - add_types
+  - add_hypermutable
+  - MutationProfile.bulk
+  - redeemR-data
+
+- title: Matrix filtering and subsetting
+  desc: Helpers for cell-by-variant matrices, binary matrices, depth matrices, and additional variant-level filters.
+  contents:
+  - subset_redeem
+  - Subset_redeemR
+  - filter_redeemR_by_cells
+  - filter_redeemR_by_UMI
+  - filter_redeemR_by_hetero
+  - filter_redeemR_by_meancount
+  - filter_redeemR_by_rules
+  - filter_redeemR_by_LIS
+  - make_V.fitered_from_mtx
+  - convert_redeem_matrix_long
+  - convert_variant
+  - safe_dim
+
+- title: Lineage and tree utilities
+  desc: Distance, matrix, and tree helpers for downstream lineage reconstruction and visualization.
+  contents:
+  - BinaryDist
+  - quick_w_jaccard
+  - quick_w_cosine
+  - compute_distance_matrix
+  - Make_matrix
+  - AddDist
+  - AddTree
+  - Make_tree
+  - create_rooted_tree
+  - plot_tree_heatmap_teng_cw
+  - plot_depth
+  - plot_variant
+  - plot_npSummary
+
+- title: Classes and S4 methods
+  desc: redeemR object classes and method documentation.
+  contents:
+  - redeemR
+  - mitoTracing
+  - Datatoplots
+  - DistObjects
+  - TREE
+  - Add_AssignVariant
+  - Add_DepthMatrix
+  - Add_tree_cut
+  - AddDatatoplot_clustering
+  - SeuratLSIClustering
+  - "AddDatatoplot_clustering,redeemR-method"
+  - "AddDist,redeemR-method"
+  - "AddTree,redeemR-method"
+  - "Add_AssignVariant,redeemR-method"
+  - "Add_DepthMatrix,redeemR-method"
+  - "Add_tree_cut,redeemR-method"
+  - "Make_matrix,redeemR-method"
+  - "Make_tree,redeemR-method"
+  - "SeuratLSIClustering,redeemR-method"
+  - "show,redeemR-method"
+
+- title: Legacy and exploratory helpers
+  desc: Older APIs, wrappers, plotting helpers, and project-specific utilities kept for backward compatibility.
+  contents:
+  - ATAC_Wrapper
+  - AddDist_legacy
+  - "AddDist_legacy,mitoTracing-method"
+  - AddHemSignature
+  - AddsigTag.6.new
+  - Build_Manhattan_Tree
+  - CW_mgatk.read
+  - Clone_FinderMarker
+  - ComputeRejectRate_legacy
+  - CountOverlap_Adj
+  - CountVperCell
+  - Create_mitoTracing
+  - CV
+  - DE.gettripple
+  - DoDE
+  - FromDist2Graph
+  - Fun.enrich_withFC
+  - Fun.enrich_withFC.pvalue
+  - GEM_Wrapper
+  - Get_Clonal_Variants
+  - Getgenenumber
+  - Getpallet2
+  - LineageBiasPlot
+  - MakeAllNodes
+  - MakeDF4Regress
+  - MakeNN
+  - Make_AnnTable
+  - Make_Cells4Nodes
+  - Make_tree_legacy
+  - "Make_tree_legacy,mitoTracing-method"
+  - MergeMtx
+  - Motifenrich.binom
+  - Multi_Wrapper
+  - NN2M
+  - ProgenyMapping
+  - ProgenyMapping_np
+  - Reclustering
+  - Reclustering_hm
+  - Run_Lin_regression
+  - Run_Lin_regression_poi
+  - Runplot_scale_2
+  - Runplot_scale_3
+  - Tomerge.col
+  - Tomerge_v2
+  - Translate_RNA2ATAC
+  - Translate_simple_ATAC2RNA
+  - Translate_simple_RNA2ATAC
+  - Vfilter_v3
+  - Vfilter_v4
+  - add_derived_profile_info
+  - add_freq_raw
+  - add_raw_fragment
+  - append_dim_row
+  - binomialtest.msig.enrch_deplet
+  - clean_redeem_removehomo
+  - clean_redeem_removehot
+  - convert_mitotracing_redeemR
+  - df2ProfileMtx
+  - get_ancestral_nodes
+  - get_hype_v2
+  - gsea_enrichmentheat
+  - make_ks_test_df
+  - make_position_df_3.4
+  - make_position_df_3.5
+  - plot_depth_legacy
+  - plot_variant_legacy
+  - redeemR.read.multiple.trim
+  - split_profile
+  - str2vector
+  - theme_cw1
+  - theme_cw2

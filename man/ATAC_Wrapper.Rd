@@ -18,5 +18,7 @@ this returns seurat object with ATAC clustering
 This function allows you to perform standard sc-ATAC clustering
 }
 \examples{
-bmmc.filtered.atac<-SeuratLSIClustering(PeakVSCell.filtered.Mtx) #each row is a peak, each column is a cell,
+\dontrun{
+bmmc.filtered.atac <- ATAC_Wrapper(PeakVSCell.filtered.Mtx)
+}
 }

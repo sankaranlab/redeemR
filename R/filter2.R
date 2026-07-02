@@ -49,39 +49,39 @@ run_binomial_noise_removal <- function(redeem){
         }    
 }
 
-#’ Create a redeemR object from raw variant summaries
-#’
-#’ This builds a redeemR S4 object by:
-#’ 1) filtering cells by median coverage (`qualifiedCellCut`),  
-#’ 2) filtering variants by cell‐count and VAF (`Cellcut`, `VAFcut`),  
-#’ 3) initializing all slots (`GTsummary.ini`, `V.ini`, `GTsummary.filtered`, `V.fitered`, etc.),  
-#’ 4) running `Make_matrix()` to build count matrices,  
-#’ 5) and performing binomial noise removal.
-#’
-#’ @param VariantsGTSummary A `data.frame` produced by `redeemR.read.trim()`, with attributes  
-#’   - `thr` (threshold),  
-#’   - `depth` (output of `DepthSummary()`),  
-#’   - (optionally) `edge_trim`, `path`, `combined`, `suffix`.
-#’ @param qualifiedCellCut Numeric; minimum **median** mitochondrial coverage for a cell to be kept (default 10).
-#’ @param VAFcut Numeric ∈ (0,1]; only variants with **variant allele frequency** ≤ `VAFcut` are considered (default 1).
-#’ @param Cellcut Integer ≥ 1; only variants seen in at least `Cellcut` cells are kept (default 2).
-#’
-#’ @return An object of S4 class **redeemR**, with slots  
-#’   - `GTsummary.ini`, `V.ini`: the unfiltered genotype & variant tables  
-#’   - `GTsummary.filtered`, `V.fitered`: the post‑filter tables  
-#’   - `CellMeta`, `DepthSummary`, `HomoVariants`, `UniqueV`, `para`, `attr`, …  
-#’   and with count matrices in `@Cts.Mtx` / `@Cts.Mtx.bi` populated.
-#’
-#’ @examples
-#’ \dontrun{
-#’   vgtsum <- redeemR.read.trim("path/to/data", thr="S", edge_trim=9)
-#’   rObj   <- Create_redeemR_model(vgtsum, qualifiedCellCut=10, VAFcut=0.5, Cellcut=3)
-#’   summary(rObj)
-#’ }
-#’
-#’ @export
-#’ @import Seurat ape phytools phangorn tidytree ggtreeExtra
-#’ @importFrom ggtree ggtree
+#' Create a redeemR object from raw variant summaries
+#'
+#' This builds a redeemR S4 object by:
+#' 1) filtering cells by median coverage (`qualifiedCellCut`),  
+#' 2) filtering variants by cell-count and VAF (`Cellcut`, `VAFcut`),  
+#' 3) initializing all slots (`GTsummary.ini`, `V.ini`, `GTsummary.filtered`, `V.fitered`, etc.),  
+#' 4) running `Make_matrix()` to build count matrices,  
+#' 5) and performing binomial noise removal.
+#'
+#' @param VariantsGTSummary A `data.frame` produced by `redeemR.read.trim()`, with attributes  
+#'   - `thr` (threshold),  
+#'   - `depth` (output of `DepthSummary()`),  
+#'   - (optionally) `edge_trim`, `path`, `combined`, `suffix`.
+#' @param qualifiedCellCut Numeric; minimum **median** mitochondrial coverage for a cell to be kept (default 10).
+#' @param VAFcut Numeric in (0,1]; only variants with **variant allele frequency** <= `VAFcut` are considered (default 1).
+#' @param Cellcut Integer >= 1; only variants seen in at least `Cellcut` cells are kept (default 2).
+#'
+#' @return An object of S4 class **redeemR**, with slots  
+#'   - `GTsummary.ini`, `V.ini`: the unfiltered genotype & variant tables  
+#'   - `GTsummary.filtered`, `V.fitered`: the post-filter tables  
+#'   - `CellMeta`, `DepthSummary`, `HomoVariants`, `UniqueV`, `para`, `attr`, ...  
+#'   and with count matrices in `@Cts.Mtx` / `@Cts.Mtx.bi` populated.
+#'
+#' @examples
+#' \dontrun{
+#'   vgtsum <- redeemR.read.trim("path/to/data", thr="S", edge_trim=9)
+#'   rObj   <- Create_redeemR_model(vgtsum, qualifiedCellCut=10, VAFcut=0.5, Cellcut=3)
+#'   summary(rObj)
+#' }
+#'
+#' @export
+#' @import Seurat ape phytools phangorn tidytree ggtreeExtra
+#' @importFrom ggtree ggtree
 
 Create_redeemR_model<-function(VariantsGTSummary=VariantsGTSummary,qualifiedCellCut=10,VAFcut=1,Cellcut=2){
  if ("edge_trim" %in% names(attributes(VariantsGTSummary))){
@@ -201,21 +201,20 @@ clean_redeem_removehot <-function(ob,hotcall= c("310_T_C","3109_T_C")){
 
 
 
-#' Add_DepthMatrix_filter2
-#' Add Filter-2–adjusted depth matrix to a redeemR object
+#' Add Filter-2-adjusted depth matrix to a redeemR object
 #'
 #' This function reads the “QualifiedTotalCts” matrix from disk (if not already supplied),
 #' applies the Filter-2 adjustment—subtracting counts for UMIs removed by edge trimming
 #' (zeros and unaffected entries remain unchanged)—then reshapes the result into a matrix
 #' matching the dimensions of `object@Cts.Mtx.bi` and stores it in
-#' `object@Cts.Mtx.depth.filter2`.
+#' `object@Ctx.Mtx.depth`.
 #'
 #' @param object A \code{redeemR} object
 #' @param QualifiedTotalCts Optional data.frame of the same format as the
 #'   “QualifiedTotalCts” file. If \code{NULL}, it will be read from
 #'   \code{file.path(object@attr$path, "QualifiedTotalCts")}.
 #' @return The input \code{redeemR} object, with
-#'   \code{object@Ctx.Mtx.depth.filter2} populated.
+#'   \code{object@Ctx.Mtx.depth} populated.
 #' @export
 Add_DepthMatrix_filter2 <- function(object, QualifiedTotalCts = NULL) {
     # 1. load the table if needed
@@ -248,7 +247,7 @@ Add_DepthMatrix_filter2 <- function(object, QualifiedTotalCts = NULL) {
     colnames(DepthMatrix) = colnames(DepthMatrix) %>% stringr::str_remove_all('_') %>% paste0('Variants', .)
 
     if (all(colnames(object@Cts.Mtx) %in% colnames(DepthMatrix)) & all(rownames(object@Cts.Mtx) %in% rownames(DepthMatrix))){
-        message("[Step 3] Assigning DepthMatrix to object@Ctx.Mtx.depth.filter2")
+        message("[Step 3] Assigning DepthMatrix to object@Ctx.Mtx.depth")
         object@Ctx.Mtx.depth<-DepthMatrix[rownames(object@Cts.Mtx),colnames(object@Cts.Mtx)]
     }else{
         print(dim(object@Cts.Mtx))

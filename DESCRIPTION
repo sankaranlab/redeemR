@@ -1,16 +1,22 @@
 Package: redeemR
-Title: R package for Regulatory multi-omics with Deep Mitochondrial mutation profiling 
-Version: 1.0
+Title: Downstream Analysis for ReDeeM Mitochondrial Variant Calls
+Version: 2.0.0
 Authors@R: 
     person("Chen", "Weng", , "cweng@broadinstitute.org", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-0801-7037"))
-Description: Introduce a new approach for single-cell Regulatory multi-omics (transcriptomics and chromatin accessibility) with Deep Mitochondrial mutation profiling (~10-fold increase in detection rate), or ReDeeM. redeemR is the R package that facilitates mutation refining, lineage tracing, as well multiomics integration analysis. 
-License: MIT LICENSE
+Author: Chen Weng [aut, cre] (<https://orcid.org/0000-0003-0801-7037>)
+Maintainer: Chen Weng <cweng@broadinstitute.org>
+Description: Processes REDEEM-V mitochondrial consensus variant calls into filtered, annotated, quality-controlled objects for single-cell lineage analysis. redeemR2.0 provides post-consensus filtering, edge trimming, binomial noise filtering, variant annotation, quality control, matrix construction, and utilities for downstream lineage reconstruction and multiome integration.
+License: MIT + file LICENSE
+URL: https://github.com/chenweng1991/redeemR
+BugReports: https://github.com/chenweng1991/redeemR/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports: 
     ape,
+    data.table,
+    dndscv,
     doMC,
     doParallel,
     dplyr,
@@ -18,11 +24,15 @@ Imports:
     ggExtra,
     ggnewscale,
     ggplot2,
+    ggraph,
     ggtree,
     ggtreeExtra,
+    glue,
     gridExtra,
     igraph,
     Matrix,
+    methods,
+    patchwork,
     phangorn,
     phytools,
     pryr,
@@ -34,6 +44,12 @@ Imports:
     tibble,
     treeio,
     tidytree,
+Suggests:
+    knitr,
+    rmarkdown,
+    pkgdown
+VignetteBuilder: knitr
 Depends: 
     R (>= 2.10)
 LazyData: true
+LazyDataCompression: xz

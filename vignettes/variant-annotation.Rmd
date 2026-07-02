@@ -1,0 +1,316 @@
+---
+title: "Variant annotation in redeemR2.0"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Variant annotation in redeemR2.0}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+## Overview
+
+Variant annotation is a core part of the `redeemR2.0` filter2 workflow. After
+post-consensus filtering, retained mtDNA variants are annotated with population,
+sequence-context, functional, disease, and mutation-class features. These fields
+support two goals:
+
+1. identify variants that should be removed or flagged before neutral lineage
+   tracing, such as inherited, pre-existing, or technically problematic variants;
+2. provide interpretable biological context for the filtered variant set.
+
+In the default filter2 preprocessing workflow, annotation is applied after
+binomial filtering and before RSRS50/blacklist cleanup:
+
+```{r annotation-position}
+obj <- clean_redeem(obj, fdr = 0.05, min_cell_per_variant = 2)
+obj <- add_annotation_redeem(obj)
+obj <- clean_redeem_remove_blacklist_RSRS50(obj)
+```
+
+## Input table
+
+Most annotation functions operate on a variant-level table with a `Variants`
+column. Variant IDs use the standard redeemR format:
+
+```text
+<position>_<reference_base>_<alternate_base>
+```
+
+For example:
+
+```{r example-input}
+variant_annotation <- data.frame(
+  Variants = c("73_A_G", "310_T_C", "11719_G_A", "14766_C_T"),
+  CellN = c(5, 12, 100, 80),
+  stringsAsFactors = FALSE
+)
+```
+
+For a filter2 object, the active variant-level table is stored in:
+
+```{r get-vfiltered}
+variant_annotation <- obj@V.fitered
+```
+
+## One-line annotation
+
+The simplest public entry point is `annotate_all_variants()`:
+
+```{r annotate-all}
+obj@V.fitered <- annotate_all_variants(obj@V.fitered)
+```
+
+For a `redeemR` object, the filter2 workflow usually calls the object wrapper:
+
+```{r object-wrapper}
+obj <- add_annotation_redeem(obj)
+```
+
+`add_annotation_redeem()` applies `annotate_all_variants()` to `obj@V.fitered`
+and returns the updated object.
+
+## Annotation components
+
+`annotate_all_variants()` applies the annotation suite in this order:
+
+```{r annotation-suite}
+variant_annotation <- variant_annotation |>
+  annotate_variants_hypermutable() |>
+  annotate_variants_population_stats() |>
+  annotate_variants_blacklist() |>
+  annotate_variants_homopolymer() |>
+  annotate_variants_aachange() |>
+  annotate_variants_mito_disease() |>
+  Annotate_base_change()
+```
+
+### Hypermutable-site labels
+
+`annotate_variants_hypermutable()` labels variants that fall into the
+hypermutable category using the package's population recurrence data.
+
+```{r hypermutable}
+variant_annotation <- annotate_variants_hypermutable(variant_annotation)
+```
+
+Main output column:
+
+| Column | Meaning |
+|---|---|
+| `hyper_label` | `"hyper"` for variants identified as hypermutable; otherwise empty |
+
+### Population and haplogroup statistics
+
+`annotate_variants_population_stats()` adds MITOMAP population-frequency fields,
+RSRS50 status, and haplogroup marker counts.
+
+```{r population}
+variant_annotation <- annotate_variants_population_stats(variant_annotation)
+```
+
+Main output columns:
+
+| Column | Meaning |
+|---|---|
+| `Locus` | Mitochondrial feature or gene annotation from the population table |
+| `RSRS50` | RSRS50 ancestral-state status |
+| `freq_all` | Overall MITOMAP population frequency |
+| `freq_african` | Frequency in lineage L |
+| `freq_asian` | Frequency in lineage M |
+| `freq_eurasian` | Frequency in lineage N |
+| `n_haplos` | Number of haplogroup marker entries for the variant |
+
+In filter2, heteroplasmic RSRS50 variants are removed before downstream lineage
+analysis because they are more consistent with inherited or pre-existing ancestry
+signals than neutral somatic lineage markers.
+
+### Blacklist-region annotation
+
+`annotate_variants_blacklist()` flags variants in known problematic mtDNA
+regions prone to misalignment or ambiguous mapping.
+
+```{r blacklist}
+variant_annotation <- annotate_variants_blacklist(variant_annotation)
+```
+
+The blacklist intervals are:
+
+| rCRS positions | Rationale |
+|---|---|
+| 302-315 | Misalignment-prone poly-C region |
+| 513-525 | Misalignment-prone repetitive region |
+| 3105-3109 | rCRS 3107N ambiguity region |
+| 16182-16187 | Misalignment-prone poly-C region |
+
+Main output column:
+
+| Column | Meaning |
+|---|---|
+| `blacklist_region` | `"blacklist_region"` when a variant falls in a predefined blacklist interval |
+
+Filter2 removes variants in these blacklist regions before downstream lineage
+analysis.
+
+### Homopolymer context
+
+`annotate_variants_homopolymer()` labels whether a variant falls in a predefined
+mitochondrial homopolymer interval.
+
+```{r homopolymer}
+variant_annotation <- annotate_variants_homopolymer(variant_annotation)
+```
+
+Main output column:
+
+| Column | Meaning |
+|---|---|
+| `homopolymer` | Homopolymer region label, or `NA` if the variant is outside known intervals |
+
+### Amino-acid consequence and predicted impact
+
+`annotate_variants_aachange()` uses a mitochondrial coding reference and
+`dndscv` to annotate coding variants.
+
+```{r aachange}
+variant_annotation <- annotate_variants_aachange(variant_annotation)
+```
+
+Main output columns:
+
+| Column | Meaning |
+|---|---|
+| `gene` | Mitochondrial coding gene |
+| `aachange` | Amino-acid change notation |
+| `impact` | Predicted coding impact category |
+
+This step requires the `dndscv` package and the mitochondrial coding reference
+bundled with `redeemR`.
+
+### Mitochondrial disease annotations
+
+`annotate_variants_mito_disease()` joins known mitochondrial disease associations
+from the package disease table.
+
+```{r disease}
+variant_annotation <- annotate_variants_mito_disease(variant_annotation)
+```
+
+Main output column:
+
+| Column | Meaning |
+|---|---|
+| `Disease` | Known mitochondrial disease association, if available |
+
+### Base-change and transition/transversion class
+
+`Annotate_base_change()` adds nucleotide substitution and mutation-class fields.
+
+```{r base-change}
+variant_annotation <- Annotate_base_change(variant_annotation)
+```
+
+Main output columns:
+
+| Column | Meaning |
+|---|---|
+| `changes` | Nucleotide substitution, such as `C_T` or `A_C` |
+| `types` | `transition` or `transversion` |
+
+These fields are used in filter2 QC to summarize transversion burden and to color
+variant-support diagnostic plots.
+
+## Cleaning annotated variants for lineage analysis
+
+After annotation, the default filter2 workflow removes heteroplasmic RSRS50
+variants and variants in mitochondrial blacklist regions:
+
+```{r clean-annotated}
+obj <- clean_redeem_remove_blacklist_RSRS50(obj)
+```
+
+This function updates the active variant table, filtered genotype summary, and
+cell-by-variant matrices so downstream lineage reconstruction uses the cleaned
+variant set.
+
+## Recomputing depth and support annotations
+
+After filtering and annotation cleanup, filter2 builds a matched depth matrix and
+adds depth/support metrics:
+
+```{r depth-support}
+obj <- Add_DepthMatrix_filter2(obj)
+obj <- add_median_depth_to_redeemR(obj)
+obj <- clean_redeem_remove_low_median_depth(obj, min_median_depth = 5)
+obj <- add_prop_2_3_to_redeemR(obj)
+```
+
+Important added columns include:
+
+| Column | Meaning |
+|---|---|
+| `median_depth` | Median site depth across cells for the variant |
+| `cellN_depth_gt0` | Number of cells with nonzero depth at the variant site |
+| `CellNPCT` | Fraction of covered cells carrying the variant |
+| `prop_2_3` | Fraction of detections supported by two or three UMIs |
+| `mean_umi_gt1` | Mean UMI count among detections with more than one UMI |
+
+When median-depth filtering is enabled, variants with median depth below 5 are
+removed by default.
+
+## Inspecting annotation output
+
+Useful checks after annotation include:
+
+```{r inspect-annotations}
+head(obj@V.fitered)
+
+table(obj@V.fitered$blacklist_region, useNA = "ifany")
+table(obj@V.fitered$RSRS50, useNA = "ifany")
+table(obj@V.fitered$types, useNA = "ifany")
+table(obj@V.fitered$hyper_label, useNA = "ifany")
+```
+
+For downstream summaries, it is often useful to export the final annotated
+variant table:
+
+```{r export-annotations}
+write.csv(
+  obj@V.fitered,
+  file = "sample1.filter2.variant_annotations.csv",
+  row.names = FALSE
+)
+```
+
+## Recommended reporting fields
+
+For manuscript or project-level QC summaries, the most useful annotation fields
+are usually:
+
+- `Variants`
+- `CellN`
+- `CellNPCT`
+- `PositiveMean`
+- `median_depth`
+- `prop_2_3`
+- `types`
+- `RSRS50`
+- `blacklist_region`
+- `homopolymer`
+- `hyper_label`
+- `freq_all`
+- `n_haplos`
+- `gene`
+- `aachange`
+- `impact`
+- `Disease`
+
+These columns document both why variants were retained or removed and what
+biological context is available for the retained set.

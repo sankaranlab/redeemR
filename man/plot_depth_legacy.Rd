@@ -22,5 +22,7 @@ directly out put the plot
 This function allows you to plot both position-wise and cell-wise mito depth summary
 }
 \examples{
-plot_depth(DN1CD34_1.depth$Total,"Total")
+\dontrun{
+plot_depth_legacy(DN1CD34_1.depth$Total, "Total")
+}
 }

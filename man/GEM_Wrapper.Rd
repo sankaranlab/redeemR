@@ -20,6 +20,8 @@ this returns seurat object with RNA clustering
 This function allows you to perform standard sc-RNA clustering
 }
 \examples{
-bmmc.data=Read10X(data.dir = "XX/CellRanger/Donor01_BMMC_1/outs/filtered_feature_bc_matrix")
-docluster_GEM(mtx=bmmc.data$`Gene Expression`,exp="DN1_BMMC1")
+\dontrun{
+bmmc.data <- Read10X(data.dir = "XX/CellRanger/Donor01_BMMC_1/outs/filtered_feature_bc_matrix")
+GEM_Wrapper(mtx = bmmc.data$`Gene Expression`, exp = "DN1_BMMC1")
+}
 }
