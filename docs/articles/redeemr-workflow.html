@@ -207,8 +207,8 @@ project-local layout is:</p>
 <span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="at">--thr</span> S <span class="dt">\</span></span>
 <span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="at">--output-metrics-tsv</span> preprocessing/filter2/sample1/sample1.S.filter2_qc_metrics.tsv <span class="dt">\</span></span>
 <span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  <span class="at">--output-report-rds</span> preprocessing/filter2/sample1/sample1.S.filter2_qc_report.rds</span></code></pre></div>
-<p>See <code>vignettes/filter2-qc.Rmd</code> for a detailed description
-of the QC report.</p>
+<p>See the <a href="filter2-qc.html">Filter2 QC report</a> article for a
+detailed description of the QC report.</p>
 </div>
 <div class="section level2">
 <h2 id="r-workflow">R workflow<a class="anchor" aria-label="anchor" href="#r-workflow"></a>
@@ -216,7 +216,7 @@ of the QC report.</p>
 <p>Load the package and point to the REDEEM-V <code>final/</code>
 directory:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">redeemR</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/chenweng1991/redeemR" class="external-link">redeemR</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">redeemv_final</span> <span class="op">&lt;-</span> <span class="st">"/path/to/redeemV/final"</span></span>
 <span><span class="va">sample_name</span> <span class="op">&lt;-</span> <span class="st">"sample1"</span></span>
@@ -406,8 +406,7 @@ rendering:</p>
 <span><span class="va">variant_plots</span><span class="op">$</span><span class="va">p2</span></span>
 <span><span class="va">variant_plots</span><span class="op">$</span><span class="va">p3</span></span>
 <span><span class="va">variant_plots</span><span class="op">$</span><span class="va">p4</span></span></code></pre></div>
-<p>For the full report, render the filter2 QC report described in
-<code>vignettes/filter2-qc.Rmd</code>.</p>
+<p>For the full report, render the filter2 QC report described in the <a href="filter2-qc.html">Filter2 QC report</a> article.</p>
 </div>
 <div class="section level2">
 <h2 id="default-parameters">Default parameters<a class="anchor" aria-label="anchor" href="#default-parameters"></a>

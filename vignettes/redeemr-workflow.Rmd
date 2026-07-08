@@ -101,7 +101,7 @@ Rscript inst/scripts/render_filter2_qc.R \
   --output-report-rds preprocessing/filter2/sample1/sample1.S.filter2_qc_report.rds
 ```
 
-See `vignettes/filter2-qc.Rmd` for a detailed description of the QC report.
+See the [Filter2 QC report](filter2-qc.html) article for a detailed description of the QC report.
 
 ## R workflow
 
@@ -282,8 +282,8 @@ variant_plots$p3
 variant_plots$p4
 ```
 
-For the full report, render the filter2 QC report described in
-`vignettes/filter2-qc.Rmd`.
+For the full report, render the filter2 QC report described in the
+[Filter2 QC report](filter2-qc.html) article.
 
 ## Default parameters
 

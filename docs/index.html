@@ -108,7 +108,7 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"devtools"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"chenweng1991/redeemR"</span>, ref <span class="op">=</span> <span class="st">"redeemR2.0"</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">redeemR</span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/chenweng1991/redeemR" class="external-link">redeemR</a></span><span class="op">)</span></span></code></pre></div>
 <p>After <code>redeemR2.0</code> is merged into the default branch, installation will use:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"chenweng1991/redeemR"</span><span class="op">)</span></span></code></pre></div>
@@ -140,7 +140,7 @@
 </h2>
 <p>The same workflow can be run directly in R:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">redeemR</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/chenweng1991/redeemR" class="external-link">redeemR</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">redeemv_final</span> <span class="op">&lt;-</span> <span class="st">"/path/to/redeemV/final"</span></span>
 <span></span>
@@ -369,12 +369,19 @@
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
+<p>The rendered documentation website is the primary entry point:</p>
 <ul>
-<li><a href="./vignettes/redeemr-workflow.Rmd">redeemR2.0 workflow</a></li>
-<li><a href="./vignettes/01_Get_Started.ipynb">Getting started</a></li>
-<li><a href="./vignettes/02_redeem_filter2.ipynb">Use filter2</a></li>
-<li><a href="./vignettes/filter2-qc.Rmd">Filter2 QC report</a></li>
-<li><a href="./vignettes/variant-annotation.Rmd">Variant annotation</a></li>
+<li><a href="https://chenweng1991.github.io/redeemR/">redeemR documentation site</a></li>
+<li><a href="https://chenweng1991.github.io/redeemR/articles/redeemr-workflow.html">redeemR2.0 workflow</a></li>
+<li><a href="https://chenweng1991.github.io/redeemR/articles/filter2-qc.html">Filter2 QC report</a></li>
+<li><a href="https://chenweng1991.github.io/redeemR/articles/variant-annotation.html">Variant annotation</a></li>
+<li><a href="https://chenweng1991.github.io/redeemR/reference/index.html">Function reference</a></li>
+<li><a href="https://chenweng1991.github.io/redeemR/news/index.html">Changelog</a></li>
+</ul>
+<p>Additional source materials and related repositories:</p>
+<ul>
+<li><a href="./vignettes/01_Get_Started.ipynb">Legacy getting started notebook</a></li>
+<li><a href="./vignettes/02_redeem_filter2.ipynb">Legacy filter2 notebook</a></li>
 <li><a href="./vignettes/03_variant_annotation.ipynb">Legacy variant annotation notebook</a></li>
 <li><a href="./scripts/">redeemR2.0 preprocess script</a></li>
 <li><a href="https://github.com/chenweng1991/redeem_reproducibility" class="external-link">ReDeeM paper analysis reproducibility</a></li>

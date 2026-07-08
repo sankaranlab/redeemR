@@ -218,11 +218,19 @@ filtering steps, and filter2 diagnostic plots.
 
 ## Documentation
 
-- [redeemR2.0 workflow](./vignettes/redeemr-workflow.Rmd)
-- [Getting started](./vignettes/01_Get_Started.ipynb)
-- [Use filter2](./vignettes/02_redeem_filter2.ipynb)
-- [Filter2 QC report](./vignettes/filter2-qc.Rmd)
-- [Variant annotation](./vignettes/variant-annotation.Rmd)
+The rendered documentation website is the primary entry point:
+
+- [redeemR documentation site](https://chenweng1991.github.io/redeemR/)
+- [redeemR2.0 workflow](https://chenweng1991.github.io/redeemR/articles/redeemr-workflow.html)
+- [Filter2 QC report](https://chenweng1991.github.io/redeemR/articles/filter2-qc.html)
+- [Variant annotation](https://chenweng1991.github.io/redeemR/articles/variant-annotation.html)
+- [Function reference](https://chenweng1991.github.io/redeemR/reference/index.html)
+- [Changelog](https://chenweng1991.github.io/redeemR/news/index.html)
+
+Additional source materials and related repositories:
+
+- [Legacy getting started notebook](./vignettes/01_Get_Started.ipynb)
+- [Legacy filter2 notebook](./vignettes/02_redeem_filter2.ipynb)
 - [Legacy variant annotation notebook](./vignettes/03_variant_annotation.ipynb)
 - [redeemR2.0 preprocess script](./scripts/)
 - [ReDeeM paper analysis reproducibility](https://github.com/chenweng1991/redeem_reproducibility)

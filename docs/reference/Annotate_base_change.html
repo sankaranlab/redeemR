@@ -92,7 +92,9 @@ named <code>Variants</code> ("<pos><em><ref></ref></em><alt>").</alt></pos></p><
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Variants <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"100_C_T"</span>, <span class="st">"200_A_C"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">Annotate_base_change</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in Annotate_base_change(df):</span> could not find function "Annotate_base_change"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Variants changes        types</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  100_C_T     C_T   transition</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  200_A_C     A_C transversion</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
