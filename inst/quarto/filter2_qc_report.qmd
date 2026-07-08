@@ -111,6 +111,16 @@ quiet_eval <- function(expr) {
   )
 }
 
+capture_plot_variant <- function(ob) {
+  tmp_pdf <- tempfile(fileext = ".pdf")
+  grDevices::pdf(tmp_pdf, width = 28, height = 6)
+  on.exit({
+    grDevices::dev.off()
+    unlink(tmp_pdf)
+  }, add = TRUE)
+  quiet_eval(plot_variant(ob))
+}
+
 calc_unique_count <- function(x) {
   if (is.null(x) || !length(x)) {
     return(0L)
@@ -275,6 +285,8 @@ qc_status <- "not_run"
 qc_message <- ""
 qc_result <- NULL
 variant_plots <- NULL
+expensive_qc_enabled <- nrow(qc_gtsummary) <= 30000L
+expensive_qc_note <- if (expensive_qc_enabled) "" else sprintf("Skipped expensive plot/QC chunks for large object: %s GTsummary.filtered rows", nrow(qc_gtsummary))
 ```
 
 ## Metadata
@@ -370,17 +382,48 @@ kable(vc_bins)
 
 ### Variant Plots
 
-```{r, fig.width=28, fig.height=6, out.width="100%"}
-variant_plots <- tryCatch(
-  quiet_eval(plot_variant(redeem_obj)),
-  error = function(e) e
-)
-if (inherits(variant_plots, "error")) {
-  cat("plot_variant failed:", conditionMessage(variant_plots), "\n")
+```{r}
+if (!expensive_qc_enabled) {
+  cat(expensive_qc_note, "\n")
 } else {
+  variant_plots <- tryCatch(
+    capture_plot_variant(redeem_obj),
+    error = function(e) e
+  )
+  if (inherits(variant_plots, "error")) {
+    cat("plot_variant failed:", conditionMessage(variant_plots), "\n")
+  }
+}
+```
+
+#### Feature totalVAF versus coefficient of variation
+
+```{r, fig.width=7, fig.height=5, out.width="100%"}
+if (expensive_qc_enabled && !inherits(variant_plots, "error") && !is.null(variant_plots$p1)) {
   print(variant_plots$p1)
+}
+```
+
+#### Heteroplasmy distribution
+
+```{r, fig.width=7, fig.height=5, out.width="100%"}
+if (expensive_qc_enabled && !inherits(variant_plots, "error") && !is.null(variant_plots$p2)) {
   print(variant_plots$p2)
+}
+```
+
+#### Variant cell count versus max UMI count
+
+```{r, fig.width=7, fig.height=5, out.width="100%"}
+if (expensive_qc_enabled && !inherits(variant_plots, "error") && !is.null(variant_plots$p3)) {
   print(variant_plots$p3)
+}
+```
+
+#### Variants per qualified cell
+
+```{r, fig.width=7, fig.height=5, out.width="100%"}
+if (expensive_qc_enabled && !inherits(variant_plots, "error") && !is.null(variant_plots$p4)) {
   print(variant_plots$p4)
 }
 ```
@@ -388,29 +431,37 @@ if (inherits(variant_plots, "error")) {
 ## Consensus QC
 
 ```{r, fig.width=24, fig.height=7, out.width="100%"}
-consensus_error <- tryCatch(
-  {
-    quiet_eval(Show_Consensus(redeem_obj, N = params$consensus_n))
-    NULL
-  },
-  error = function(e) e
-)
-if (inherits(consensus_error, "error")) {
-  cat("Show_Consensus failed:", conditionMessage(consensus_error), "\n")
+if (!expensive_qc_enabled) {
+  cat(expensive_qc_note, "\n")
+} else {
+  consensus_error <- tryCatch(
+    {
+      quiet_eval(Show_Consensus(redeem_obj, N = params$consensus_n))
+      NULL
+    },
+    error = function(e) e
+  )
+  if (inherits(consensus_error, "error")) {
+    cat("Show_Consensus failed:", conditionMessage(consensus_error), "\n")
+  }
 }
 ```
 
 ## Filter2 QC
 
 ```{r}
-redeem_obj_qc <- tryCatch(
-  quiet_eval(add_raw_fragment(redeem_obj, raw = params$raw_name)),
-  error = function(e) e
-)
-if (inherits(redeem_obj_qc, "error")) {
-  qc_status <- "raw_fragment_failed"
-  qc_message <- conditionMessage(redeem_obj_qc)
+if (!expensive_qc_enabled) {
+  qc_status <- "skipped_large_object"
+  qc_message <- expensive_qc_note
 } else {
+  redeem_obj_qc <- tryCatch(
+    quiet_eval(add_raw_fragment(redeem_obj, raw = params$raw_name)),
+    error = function(e) e
+  )
+  if (inherits(redeem_obj_qc, "error")) {
+    qc_status <- "raw_fragment_failed"
+    qc_message <- conditionMessage(redeem_obj_qc)
+  } else {
   qc_attempt <- tryCatch(
     {
       grDevices::pdf(NULL)
@@ -425,6 +476,7 @@ if (inherits(redeem_obj_qc, "error")) {
   } else {
     qc_status <- "ok"
     qc_result <- qc_attempt
+  }
   }
 }
 status_df <- data.frame(

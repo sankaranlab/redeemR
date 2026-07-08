@@ -112,10 +112,12 @@ render_with_quarto_pkg <- function() {
   if (!requireNamespace('quarto', quietly = TRUE)) {
     return(FALSE)
   }
+  oldwd <- getwd()
+  on.exit(setwd(oldwd), add = TRUE)
+  setwd(staging_dir)
   quarto::quarto_render(
-    input = local_template_path,
+    input = basename(local_template_path),
     output_file = basename(opts$output_html),
-    output_dir = staging_dir,
     execute_params = list(
       input_rds = opts$input_rds,
       sample_name = opts$sample_name,
@@ -136,11 +138,13 @@ render_with_cli <- function() {
   if (!nzchar(cli)) {
     stop('Quarto CLI not found and quarto R package is unavailable.', call. = FALSE)
   }
+  oldwd <- getwd()
+  on.exit(setwd(oldwd), add = TRUE)
+  setwd(staging_dir)
   qargs <- c(
-    'render', local_template_path,
+    'render', basename(local_template_path),
     '--to', 'html',
     '--output', basename(staging_html),
-    '--output-dir', staging_dir,
     '-P', paste0('input_rds:', normalizePath(opts$input_rds)),
     '-P', paste0('sample_name:', ifelse(is.null(opts$sample_name), '', opts$sample_name)),
     '-P', paste0('thr:', ifelse(is.null(opts$thr), '', opts$thr)),
